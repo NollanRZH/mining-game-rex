@@ -48,8 +48,8 @@ Clique. Mine. Collectionne. Deviens une légende cosmique. 🌠
   - Dernier drop
 
 - ⌨️ **Raccourcis clavier** :
-  - \`M\` → Miner
-  - \`R\` → Reset
+  - `M` → Miner
+  - `R` → Reset
 
 - 📤 **Export** / 📥 **Import** de sauvegarde (JSON)
 - 🔔 **Notifications toast**
