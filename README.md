@@ -1,4 +1,17 @@
 # ⛏️ Mining Game — Rex
+![Made in France](https://img.shields.io/badge/Made%20in-France-%230055A4?style=for-the-badge&labelColor=%23EF4135&logoColor=white)
+![BZH](https://img.shields.io/badge/BZH-Bretagne-000000?style=for-the-badge&logoColor=white)
+
+
+![HTML5](https://img.shields.io/badge/HTML5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-%23F7DF1E.svg?style=for-the-badge&logo=javascript&logoColor=black)
+![Vanilla JS](https://img.shields.io/badge/Vanilla%20JS-%23F7DF1E.svg?style=for-the-badge&logo=javascript&logoColor=black)
+
+
+![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-222222?style=for-the-badge&logo=githubpages&logoColor=white)
+![Single File](https://img.shields.io/badge/Single--File-Yes-6A5ACD?style=for-the-badge)
+![LocalStorage](https://img.shields.io/badge/Save-LocalStorage-2ea44f?style=for-the-badge)
 
 🇫🇷 **100% français** — conçu avec passion en **Bretagne**, par des **Bretons de Rennes**.  
 Une vraie pépite locale : du mining, des étoiles, et du RNG absolument violent ! 🌌✨
@@ -126,9 +139,9 @@ Toute reproduction, copie, modification, redistribution ou utilisation, partiell
 
 ## 📬 Contact
 
-Si tu veux utiliser une partie du projet (collab, autorisation, partenariat), contacte les auteurs via GitHub en copie par mail.
+Si tu veux utiliser une partie du projet (collab, autorisation, partenariat), contacte les auteurs via GitHub ou en copie par mail :
 
-nollandroguetpro@gmail.com
+**nollandroguetpro@gmail.com**
 
-melanlecoeuvre.pro@mail.com
+**melanlecoeuvre.pro@mail.com**
 
