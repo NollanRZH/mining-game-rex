@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mining Game : Mine 1 — Rex</title>
+
+  <style>
+    /* Default = ASTRO */
+    :root{
+      --bg0:#05060a;
+      --bg1:#0a0e1a;
+      --panel: rgba(255,255,255,0.06);
+      --panel2: rgba(255,255,255,0.08);
+      --stroke: rgba(255,255,255,0.14);
+      --stroke2: rgba(255,255,255,0.10);
+      --text: #e9ecf1;
+      --muted: rgba(233,236,241,0.68);
+
+      --good:#4CAF50;
+      --danger:#f44336;
+      --info:#2196F3;
+
+      --shadow: 0 18px 60px rgba(0,0,0,0.55);
+      --shadow2: 0 10px 30px rgba(0,0,0,0.45);
+
+      --radius: 18px;
+      --radius2: 26px;
+
+      --border-fr: linear-gradient(to right, #0000ff, #ffffff, #ff0000);
+
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+      /* Accent (used for focus rings etc.) */
+      --accent: rgba(91,179,255,0.55);
+
+      /* Background gradients for the current theme */
+      --bg-grad-1: radial-gradient(1200px 800px at 20% 10%, rgba(65,255,255,0.10), transparent 55%);
+      --bg-grad-2: radial-gradient(1100px 750px at 80% 20%, rgba(255,65,65,0.10), transparent 60%);
+      --bg-grad-3: radial-gradient(900px 600px at 55% 90%, rgba(0,145,255,0.10), transparent 60%);
+      --bg-grad-4: linear-gradient(180deg, var(--bg0), var(--bg1));
+    }
+
+    /* Dark theme (more neutral, less spacey) */
+    html[data-theme="dark"]{
+      --bg0:#07080c;
+      --bg1:#0c0f17;
+      --panel: rgba(255,255,255,0.055);
+      --panel2: rgba(255,255,255,0.075);
+      --stroke: rgba(255,255,255,0.13);
+      --stroke2: rgba(255,255,255,0.09);
+      --text: #eef1f6;
+      --muted: rgba(238,241,246,0.64);
+      --accent: rgba(180,180,255,0.55);
+
+      --bg-grad-1: radial-gradient(1200px 800px at 20% 10%, rgba(255,255,255,0.06), transparent 55%);
+      --bg-grad-2: radial-gradient(900px 600px at 80% 20%, rgba(140,170,255,0.08), transparent 60%);
+      --bg-grad-3: radial-gradient(900px 600px at 55% 90%, rgba(255,170,120,0.06), transparent 60%);
+      --bg-grad-4: linear-gradient(180deg, var(--bg0), var(--bg1));
+    }
+
+    /* Light theme (still keeps your FR border vibe) */
+    html[data-theme="light"]{
+      --bg0:#f6f7fb;
+      --bg1:#e8ecf8;
+      --panel: rgba(255,255,255,0.72);
+      --panel2: rgba(255,255,255,0.86);
+      --stroke: rgba(10,20,60,0.14);
+      --stroke2: rgba(10,20,60,0.10);
+      --text: #0d1020;
+      --muted: rgba(13,16,32,0.62);
+
+      --shadow: 0 18px 60px rgba(10,15,25,0.16);
+      --shadow2: 0 10px 30px rgba(10,15,25,0.14);
+
+      --accent: rgba(0,145,255,0.55);
+
+      --bg-grad-1: radial-gradient(1200px 800px at 20% 10%, rgba(0,145,255,0.12), transparent 55%);
+      --bg-grad-2: radial-gradient(1100px 750px at 80% 20%, rgba(255,65,65,0.10), transparent 60%);
+      --bg-grad-3: radial-gradient(900px 600px at 55% 90%, rgba(65,255,140,0.10), transparent 60%);
+      --bg-grad-4: linear-gradient(180deg, var(--bg0), var(--bg1));
+    }
+
+    *{ box-sizing:border-box; }
+
+    html, body{
+      height:100%;
+      margin:0;
+      background:
+        var(--bg-grad-1),
+        var(--bg-grad-2),
+        var(--bg-grad-3),
+        var(--bg-grad-4);
+      color: var(--text);
+      font-family: var(--font);
+      overflow-x:hidden;
+    }
+
+    /* Fancy French border*/
+    .frame{
+      min-height:100%;
+      border: 6px solid transparent;
+      border-image: var(--border-fr) 1;
+      border-image-slice: 1;
+      position: relative;
+      isolation:isolate;
+    }
+
+    /* Subtle grain overlay (adjust for light theme) */
+    .frame::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='130'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='130' height='130' filter='url(%23n)' opacity='.12'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+      opacity: 0.22;
+      pointer-events:none;
+      z-index:-1;
+    }
+
+    html[data-theme="light"] .frame::before{
+      opacity: 0.12;
+      mix-blend-mode: multiply;
+    }
+
+    /* Floating stars (kept) — disabled on light theme for clarity */
+    .star{
+      position:absolute;
+      width:2px;
+      height:2px;
+      background-color: white;
+      opacity: 0;
+      animation: blink 2.2s infinite ease-in-out;
+      filter: drop-shadow(0 0 6px rgba(255,255,255,0.8));
+    }
+
+    html[data-theme="light"] .star{
+      display:none;
+    }
+
+    .star.red{ background:#ff5a5a; }
+    .star.green{ background:#57ff7e; }
+    .star.blue{ background:#5bb3ff; }
+
+    @keyframes blink{
+      0%, 100% { opacity:0; transform:scale(1); }
+      50%      { opacity:1; transform:scale(1.8); }
+    }
+
+    /* Layout */
+    .container{
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 22px 16px 40px;
+      display:grid;
+      gap: 18px;
+      grid-template-columns: 360px 1fr;
+      align-items:start;
+    }
+
+    @media (max-width: 980px){
+      .container{ grid-template-columns: 1fr; }
+    }
+
+    header.hero{
+      grid-column: 1 / -1;
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap: 14px;
+      padding: 18px 18px;
+      border-radius: var(--radius2);
+      background: linear-gradient(180deg, var(--panel2), var(--panel));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      position:sticky;
+      top: 10px;
+      z-index: 5;
+      backdrop-filter: blur(10px);
+    }
+
+    .title-wrap{
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+      min-width: 260px;
+    }
+
+    h1{
+      margin:0;
+      font-size: clamp(18px, 2.3vw, 28px);
+      letter-spacing: 0.4px;
+      line-height:1.15;
+      animation: colorChange 6s infinite;
+    }
+
+    @keyframes colorChange{
+      0%{ color:#ff5c5c; }
+      33%{ color:#57ff7e; }
+      67%{ color:#5bb3ff; }
+      100%{ color:#ff5c5c; }
+    }
+
+    /* Light theme: stop animated rainbow title (cleaner) */
+    html[data-theme="light"] h1{
+      animation: none;
+      color: #0d1020;
+    }
+
+    .subtitle{
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* Buttons */
+    .btn-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 10px;
+      justify-content:flex-end;
+      align-items:center;
+    }
+
+    button{
+      border: 1px solid var(--stroke2);
+      color: var(--text);
+      background: rgba(255,255,255,0.07);
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .18s ease, background-color .18s ease, border-color .18s ease, box-shadow .18s ease;
+      box-shadow: var(--shadow2);
+    }
+
+    html[data-theme="light"] button{
+      background: rgba(255,255,255,0.86);
+    }
+
+    button:hover{
+      transform: translateY(-1px) scale(1.03);
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.18);
+    }
+
+    html[data-theme="light"] button:hover{
+      background: rgba(255,255,255,0.95);
+      border-color: rgba(10,20,60,0.18);
+    }
+
+    button:active{
+      transform: translateY(0px) scale(0.99);
+    }
+
+    button:disabled{
+      cursor:not-allowed;
+      opacity:0.55;
+      transform:none;
+    }
+
+    .btn-primary{
+      background: linear-gradient(180deg, rgba(76,175,80,0.28), rgba(76,175,80,0.12));
+      border-color: rgba(76,175,80,0.35);
+    }
+
+    .btn-danger{
+      background: linear-gradient(180deg, rgba(244,67,54,0.26), rgba(244,67,54,0.11));
+      border-color: rgba(244,67,54,0.35);
+    }
+
+    .btn-info{
+      background: linear-gradient(180deg, rgba(33,150,243,0.26), rgba(33,150,243,0.11));
+      border-color: rgba(33,150,243,0.35);
+    }
+
+    /* Theme / Admin icon buttons */
+    .icon-btn{
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius: 14px;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    /* Cards / panels */
+    .card{
+      border-radius: var(--radius2);
+      background: linear-gradient(180deg, var(--panel2), var(--panel));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .card .card-h{
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+    }
+
+    html[data-theme="light"] .card .card-h{
+      border-bottom: 1px solid rgba(10,20,60,0.10);
+    }
+
+    .card .card-h h2{
+      margin:0;
+      font-size: 15px;
+      letter-spacing: 0.4px;
+      color: rgba(233,236,241,0.92);
+    }
+
+    html[data-theme="light"] .card .card-h h2{
+      color: rgba(13,16,32,0.90);
+    }
+
+    .card .card-b{
+      padding: 14px 16px 16px;
+    }
+
+    /* Controls */
+    .controls{
+      display:grid;
+      gap: 10px;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+    }
+
+    label{
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    input[type="text"], input[type="number"], select{
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.25);
+      color: var(--text);
+      outline:none;
+      transition: border-color .18s ease, box-shadow .18s ease;
+    }
+
+    html[data-theme="light"] input[type="text"],
+    html[data-theme="light"] input[type="number"],
+    html[data-theme="light"] select{
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(10,20,60,0.14);
+      color: var(--text);
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus{
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(91,179,255,0.15);
+    }
+
+    .toggle{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.18);
+    }
+
+    html[data-theme="light"] .toggle{
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(10,20,60,0.14);
+    }
+
+    .toggle small{ color: var(--muted); }
+
+    .toggle button{
+      padding: 8px 10px;
+      border-radius: 12px;
+      box-shadow: none;
+    }
+
+    /* Stats */
+    .stats{
+      display:grid;
+      gap: 10px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .stat{
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    html[data-theme="light"] .stat{
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(10,20,60,0.12);
+    }
+
+    .stat .k{
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+    }
+    .stat .v{
+      font-size: 16px;
+      font-weight: 900;
+    }
+    .stat .sub{
+      margin-top: 2px;
+      font-size: 11px;
+      color: rgba(233,236,241,0.60);
+      font-family: var(--mono);
+    }
+
+    html[data-theme="light"] .stat .sub{
+      color: rgba(13,16,32,0.55);
+    }
+
+    /* Funny message */
+    #funnyMessages{
+      font-size: 13px;
+      color: #ffd700;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.10);
+      min-height: 42px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+    }
+
+    html[data-theme="light"] #funnyMessages{
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(10,20,60,0.12);
+      color: #a66b00;
+    }
+
+    /* Inventory table */
+    .table-wrap{
+      max-height: 58vh;
+      overflow:auto;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    html[data-theme="light"] .table-wrap{
+      border-top: 1px solid rgba(10,20,60,0.10);
+    }
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      font-size: 14px;
+    }
+
+    thead th{
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(10,14,26,0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      padding: 12px 12px;
+      text-align:left;
+      color: rgba(233,236,241,0.82);
+      font-size: 12px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    html[data-theme="light"] thead th{
+      background: rgba(255,255,255,0.92);
+      color: rgba(13,16,32,0.70);
+      border-bottom: 1px solid rgba(10,20,60,0.10);
+    }
+
+    tbody td{
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    html[data-theme="light"] tbody td{
+      border-bottom: 1px solid rgba(10,20,60,0.08);
+    }
+
+    tbody tr:hover td{
+      background: rgba(255,255,255,0.04);
+    }
+
+    html[data-theme="light"] tbody tr:hover td{
+      background: rgba(0,145,255,0.06);
+    }
+
+    /* Toast announcement */
+    #announcement{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 22px;
+      z-index: 999;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.62);
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: var(--shadow2);
+      max-width: min(720px, calc(100% - 26px));
+      text-align:center;
+      opacity: 0;
+      pointer-events:none;
+      transition: opacity .18s ease, transform .18s ease;
+      backdrop-filter: blur(8px);
+      font-weight: 800;
+      color: rgba(233,236,241,0.95);
+    }
+
+    html[data-theme="light"] #announcement{
+      background: rgba(255,255,255,0.86);
+      border: 1px solid rgba(10,20,60,0.16);
+      color: rgba(13,16,32,0.92);
+    }
+
+    #announcement.show{
+      opacity: 1;
+      transform: translateX(-50%) translateY(-2px);
+    }
+
+    /* Footer */
+    #credits{
+      grid-column: 1 / -1;
+      color: rgba(233,236,241,0.65);
+      font-size: 12px;
+      text-align:center;
+      padding: 12px 10px;
+    }
+
+    html[data-theme="light"] #credits{
+      color: rgba(13,16,32,0.62);
+    }
+
+    /* Small helpers */
+    .muted{ color: var(--muted); }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.18);
+      font-size: 12px;
+      color: rgba(233,236,241,0.82);
+    }
+    html[data-theme="light"] .chip{
+      background: rgba(255,255,255,0.80);
+      border: 1px solid rgba(10,20,60,0.14);
+      color: rgba(13,16,32,0.80);
+    }
+
+    .chip b{ color: rgba(233,236,241,0.96); }
+    html[data-theme="light"] .chip b{ color: rgba(13,16,32,0.92); }
+
+    .kbd{
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(233,236,241,0.85);
+    }
+    html[data-theme="light"] .kbd{
+      background: rgba(10,20,60,0.06);
+      border: 1px solid rgba(10,20,60,0.12);
+      color: rgba(13,16,32,0.78);
+    }
+
+    /* =========================================================
+       ADMIN MODAL 
+       ========================================================= */
+    .modal-backdrop{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index: 2000;
+      padding: 18px;
+    }
+    html[data-theme="light"] .modal-backdrop{
+      background: rgba(13,16,32,0.42);
+    }
+
+    .modal{
+      width: min(860px, 100%);
+      border-radius: 22px;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(180deg, var(--panel2), var(--panel));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      backdrop-filter: blur(14px);
+    }
+
+    .modal-h{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    html[data-theme="light"] .modal-h{
+      border-bottom: 1px solid rgba(10,20,60,0.10);
+    }
+
+    .modal-h h3{
+      margin:0;
+      font-size: 14px;
+      letter-spacing: 0.4px;
+    }
+
+    .modal-b{
+      padding: 14px 16px 18px;
+      display:grid;
+      gap: 14px;
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width: 860px){
+      .modal-b{ grid-template-columns: 1fr; }
+    }
+
+    .modal .box{
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.18);
+    }
+    html[data-theme="light"] .modal .box{
+      border: 1px solid rgba(10,20,60,0.12);
+      background: rgba(255,255,255,0.78);
+    }
+
+    .row{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .row > *{ flex: 1 1 auto; }
+
+    .hint{
+      font-size: 12px;
+      color: var(--muted);
+      line-height:1.45;
+    }
+
+    .modal-actions{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      padding: 14px 16px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    html[data-theme="light"] .modal-actions{
+      border-top: 1px solid rgba(10,20,60,0.10);
+    }
+
+    /* =========================================================
+       RARITY STYLES 
+       ========================================================= */
+    tr.common td {
+      color: #c8c8c8;
+      background-color: #8c8c8c;
+      font-weight: bold;
+      text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
+      border: 2px solid black;
+      border-color: #646464;
+    }
+
+    tr.uncommon td {
+      color: #00c800;
+      background-color: #00aa00;
+      font-weight: bold;
+      text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
+      border: 2px solid black;
+      border-color: #007800;
+    }
+
+    tr.rare td {
+      color: #00b3ff;
+      background-color: #008ec9;
+      font-weight: bold;
+      text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
+      border: 2px solid black;
+      border-color: #006a96;
+    }
+
+    tr.epic td {
+      color: #b400cc;
+      background-color: #9900ad;
+      font-weight: bold;
+      text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
+      border: 2px solid black;
+      border-color: #630070;
+    }
+
+    tr.mythical td {
+      color: #ff0000;
+      background-color: #be0000;
+      font-weight: bold;
+      text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
+      border: 2px solid black;
+      border-color: #ff2828;
+    }
+
+    tr.legendary td {
+      color: #ffaa00;
+      background-color: #e69500;
+      font-weight: bold;
+      text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
+      border: 2px solid black;
+      border-color: #ffb31c;
+    }
+
+    tr.godly td {
+      color: #ffffff;
+      font-size: 20px;
+      font-weight: bold;
+      background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      border: 2px solid #ff00ff;
+      -webkit-text-stroke: 0.75px black;
+    }
+
+    tr.godly { background: linear-gradient(45deg, #64ffff, #64ff64); }
+
+    tr.exotic td {
+      color: #ffffff;
+      font-size: 21px;
+      font-weight: bold;
+      background: linear-gradient(to right, #ffffff, #ff4141, #ffffff, #ff4141, #ffffff, #ff4141, #ffffff, #ff4141, #ffffff, #ff4141, #ffffff, #ff4141);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      border: 2px solid #ff4141;
+      -webkit-text-stroke: 0.75px black;
+    }
+    tr.exotic { background: linear-gradient(45deg, #ff6464, #ffffff, #ff6464); }
+
+    tr.celestial td {
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: bold;
+      background: linear-gradient(to right, #ffffff, #4141ff, #ffffff, #4141ff, #ffffff, #4141ff, #ffffff, #4141ff, #ffffff, #4141ff, #ffffff, #4141ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      border: 2px solid #4141ff;
+      -webkit-text-stroke: 0.75px black;
+    }
+    tr.celestial { background: linear-gradient(45deg, #6464ff, #ffffff, #6464ff); }
+
+    tr.heavenly td {
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: bold;
+      background: linear-gradient(to right, #ffffff, #41ffff, #ffffff, #41ffff, #ffffff, #41ffff, #ffffff, #41ffff, #ffffff, #41ffff, #ffffff, #41ffff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      border: 2px solid #41ffff;
+      -webkit-text-stroke: 0.75px black;
+    }
+    tr.heavenly { background: linear-gradient(45deg, #64ffff, #ffffff, #64ffff); }
+
+    tr.empyrean td {
+      color: #ffffff;
+      font-size: 25px;
+      font-weight: bold;
+      background: linear-gradient(to right, #ffff7d, #5eff89, #ffff7d, #5eff89, #ffff7d, #5eff89, #ffff7d, #5eff89, #ffff7d, #5eff89, #ffff7d, #5eff89);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      border: 2px solid #79ff5e;
+      -webkit-text-stroke: 0.75px black;
+    }
+    tr.empyrean { background: linear-gradient(45deg, #82ffa3, #ffffab, #82ffa3); }
+
+    tr.paradoxal td {
+      color: #ffffff;
+      font-size: 27px;
+      font-weight: bold;
+      background: linear-gradient(to right, #00ff99, #ff00d0, #b7ff00, #356e00, #00ff99, #ff00d0, #b7ff00, #356e00, #00ff99, #ff00d0, #b7ff00, #356e00, #00ff99, #ff00d0, #b7ff00, #356e00, #00ff99, #ff00d0, #b7ff00, #356e00, #00ff99, #ff00d0, #b7ff00, #356e00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      border: 2px solid #b7ff00;
+      -webkit-text-stroke: 0.75px black;
+    }
+    tr.paradoxal { background: linear-gradient(45deg, #644b99, #ff64d0, #b7ff4b, #356e4b); }
+
+    tr.primeval td {
+      color: #ffffff;
+      font-size: 30px;
+      font-weight: bold;
+      background: linear-gradient(to right, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      border: 2px solid #ffff64;
+      -webkit-text-stroke: 0.75px black;
+    }
+    tr.primeval { background: linear-gradient(135deg, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64); }
+
+    tr.forsaken td {
+      color: #ffffff;
+      font-size: 35px;
+      font-weight: bold;
+      background: linear-gradient(to right, #ff8000, #ffc17a, #ff4036, #ff8000, #ffc17a, #ff4036, #ff8000, #ffc17a, #ff4036, #ff8000, #ffc17a, #ff4036, #ff8000, #ffc17a, #ff4036, #ff8000, #ffc17a, #ff4036);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      border: 2px solid #ff5900;
+      -webkit-text-stroke: 0.75px black;
+    }
+    tr.forsaken { background: linear-gradient(135deg, #ff804b, #ffc787, #ff5147, #ff804b, #ffc787, #ff5147); }
+
+    tr.infinity td {
+      color: #ffffff;
+      font-size: 50px;
+      font-weight: bold;
+      background: linear-gradient(to right, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      border: 2px solid #00ffc3;
+      -webkit-text-stroke: 0.75px black;
+    }
+    tr.infinity { background: linear-gradient(135deg, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff); }
+
+    tr.cosmic td {
+      color: #ffffff;
+      font-size: 23px;
+      font-weight: bold;
+      background: linear-gradient(to right, #ffffff, #ffff00, #ffffff, #ffff00, #ffffff, #ffff00, #ffffff, #ffff00, #ffffff, #ffff00, #ffffff, #ffff00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      border: 2px solid #ffff00;
+      -webkit-text-stroke: 0.75px black;
+    }
+    tr.cosmic { background: linear-gradient(45deg, #ffff4b, #ffffff, #ffff4b); }
+
+    /* Reduce “border inside table” chaos: rarity styles already add borders */
+    tbody td{ border-left:none; border-right:none; }
+  </style>
+</head>
+
+<body>
+  <div class="frame">
+    <!-- Decorative stars (kept) -->
+    <div class="star" style="top: 50px; left: 20px;"></div>
+    <div class="star" style="top: 100px; left: 150px;"></div>
+    <div class="star" style="top: 20px; left: 300px;"></div>
+    <div class="star" style="top: 200px; left: 600px;"></div>
+    <div class="star red" style="top: 80px; left: 60px;"></div>
+    <div class="star green" style="top: 160px; left: 220px;"></div>
+    <div class="star blue" style="top: 240px; left: 380px;"></div>
+
+    <div class="container">
+      <!-- Sticky modern header -->
+      <header class="hero">
+        <div class="title-wrap">
+          <h1>Mining Game : Mine 1 — Rex</h1>
+          <div class="subtitle">
+            Click <span class="kbd">Mine</span> to roll a mineral. Inventory saves automatically. 
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <!-- Kept IDs for compatibility -->
+          <button id="mineButton" class="btn-primary" title="Mine a random mineral (shortcut: M)">⛏️ Mine</button>
+          <button id="resetButton" class="btn-danger" title="Reset inventory (shortcut: R)">🧹 Reset</button>
+
+          <!-- QoL -->
+          <button id="exportButton" class="btn-info" title="Export save to JSON">⬇️ Export</button>
+          <button id="importButton" class="btn-info" title="Import save from JSON">⬆️ Import</button>
+
+          <button id="themeButton" class="icon-btn" title="Theme: Astro (default)">🌌</button>
+
+          <!-- NEW: Admin Panel -->
+          <button id="adminButton" class="icon-btn" title="Admin Panel (local)">🛠️</button>
+        </div>
+      </header>
+
+      <!-- Left panel: controls + stats -->
+      <section class="card">
+        <div class="card-h">
+          <h2>Control Center</h2>
+          <span class="chip"><b>Tip</b> <span class="muted">Shortcuts:</span> <span class="kbd">M</span> <span class="kbd">R</span> <span class="kbd">A</span></span>
+        </div>
+        <div class="card-b">
+          <div class="controls">
+            <div class="field">
+              <label for="searchInput">Search in inventory</label>
+              <input id="searchInput" type="text" placeholder="e.g. diamond, narox, cosmic..." autocomplete="off" />
+            </div>
+
+            <div class="toggle">
+              <div>
+                <div style="font-weight:900;">Sort mode</div>
+                <small>Rarity (default) or Amount</small>
+              </div>
+              <button id="sortToggleButton" type="button">Rarity</button>
+            </div>
+
+            <div class="stats">
+              <div class="stat">
+                <div class="k">TOTAL MINED</div>
+                <div class="v" id="totalMined">0</div>
+                <div class="sub" id="totalMinedSub">minerals</div>
+              </div>
+
+              <div class="stat">
+                <div class="k">UNIQUE MINERALS</div>
+                <div class="v" id="uniqueMined">0</div>
+                <div class="sub">distinct drops</div>
+              </div>
+
+              <div class="stat">
+                <div class="k">LAST DROP</div>
+                <div class="v" id="lastDrop">—</div>
+                <div class="sub" id="lastDropRarity">rarity: —</div>
+              </div>
+
+              <div class="stat">
+                <div class="k">TOTAL ROLLS</div>
+                <div class="v" id="totalRolls">0</div>
+                <div class="sub">all-time</div>
+              </div>
+            </div>
+
+            <div id="funnyMessages">Loading funny messages…</div>
+
+            <div class="muted" style="font-size:12px; line-height:1.45;">
+              <b>Welcome to our game!:</b> Vive la France!
+             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right panel: Inventory -->
+      <section class="card">
+        <div class="card-h">
+          <h2>Inventory</h2>
+          <span class="chip"><b id="inventoryCount">0</b> <span class="muted">rows shown</span></span>
+        </div>
+
+        <div class="table-wrap" id="inventory">
+          <table aria-label="Inventory table">
+            <thead>
+              <tr>
+                <th style="width:70%;">Mineral</th>
+                <th style="width:30%;">Amount</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryBody">
+              <!-- Rows inserted by JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div id="credits">
+        <p>Made by Nollan and Melan ✨</p>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="announcement" role="status" aria-live="polite"></div>
+
+    <!-- =========================================================
+         ADMIN PANEL MODAL (new)
+         - Pure client-side (local)
+         - Optional PIN lock to avoid accidental use
+         - Shortcut: Press "A" to open
+         ========================================================= -->
+    <div id="adminBackdrop" class="modal-backdrop" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="Admin panel">
+        <div class="modal-h">
+          <h3>🛠️ Admin Panel <span class="muted" style="font-weight:600;">(local only)</span></h3>
+          <div class="row" style="flex:0 0 auto; gap:8px;">
+            <span class="chip"><b>PIN</b> <span class="muted">default:</span> <span class="kbd">1337</span></span>
+            <button id="adminCloseButton" class="icon-btn" title="Close">✖️</button>
+          </div>
+        </div>
+
+        <div class="modal-b">
+          <!-- Unlock box -->
+          <div class="box">
+            <div style="font-weight:900; margin-bottom:10px;">🔐 Unlock</div>
+            <div class="field">
+              <label for="adminPinInput">Enter PIN</label>
+              <input id="adminPinInput" type="number" placeholder="1337" />
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <button id="adminUnlockButton" class="btn-info">Unlock</button>
+              <button id="adminLockButton">Lock</button>
+            </div>
+            <div class="hint" style="margin-top:10px;">
+              The admin panel is just for testing/fun. It modifies your local save only.
+            </div>
+          </div>
+
+          <!-- Give minerals -->
+          <div class="box">
+            <div style="font-weight:900; margin-bottom:10px;">🎁 Give Minerals</div>
+
+            <div class="field">
+              <label for="adminMineralSelect">Mineral</label>
+              <select id="adminMineralSelect"></select>
+            </div>
+
+            <div class="field" style="margin-top:10px;">
+              <label for="adminAmountInput">Amount</label>
+              <input id="adminAmountInput" type="number" min="1" value="1" />
+            </div>
+
+            <div class="row" style="margin-top:10px;">
+              <button id="adminGiveButton" class="btn-primary">Give</button>
+              <button id="adminSetButton" class="btn-info">Set Amount</button>
+            </div>
+
+            <div class="hint" style="margin-top:10px;">
+              Give = adds amount. Set Amount = overwrites amount for that mineral.
+            </div>
+          </div>
+
+          <!-- Simulation / Quick tools -->
+          <div class="box">
+            <div style="font-weight:900; margin-bottom:10px;">🎲 Simulation</div>
+            <div class="row">
+              <button id="adminRoll10Button" class="btn-primary">Mine x10</button>
+              <button id="adminRoll100Button" class="btn-primary">Mine x100</button>
+              <button id="adminRoll1000Button" class="btn-primary">Mine x1000</button>
+            </div>
+            <div class="hint" style="margin-top:10px;">
+              Useful to test rarity distribution fast. (Careful: x1000 adds a lot to inventory.)
+            </div>
+          </div>
+
+          <!-- Dangerous tools -->
+          <div class="box">
+            <div style="font-weight:900; margin-bottom:10px;">⚠️ Dangerous</div>
+            <div class="row">
+              <button id="adminClearButton" class="btn-danger">Clear Inventory</button>
+              <button id="adminWipeAllButton" class="btn-danger">Wipe ALL Storage</button>
+            </div>
+            <div class="hint" style="margin-top:10px;">
+              Wipe ALL clears inventory, rolls counter, theme, and admin lock state.
+            </div>
+          </div>
+
+          <!-- Quick export/import -->
+          <div class="box" style="grid-column: 1 / -1;">
+            <div style="font-weight:900; margin-bottom:10px;">💾 Save Tools</div>
+            <div class="row">
+              <button id="adminExportButton" class="btn-info">Export Save</button>
+              <button id="adminImportButton" class="btn-info">Import Save</button>
+              <button id="adminCopyStatsButton">Copy Stats</button>
+            </div>
+            <div class="hint" style="margin-top:10px;">
+              Export/Import is the same as the main buttons, just accessible here.
+              Copy Stats copies a small text summary (total mined, rolls, top minerals).
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <span class="muted" style="margin-right:auto; font-size:12px;">
+            Shortcut: <span class="kbd">A</span> opens Admin • <span class="kbd">Esc</span> closes
+          </span>
+          <button id="adminDoneButton" class="btn-info">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================
+       Mining Game — Modernized JS (single file)
+       + Theme switcher + Admin panel
+       ========================================================= */
+
+    // -----------------------------
+    // 0) Storage keys
+    // -----------------------------
+    const STORAGE_KEY = "inventory";
+    const STORAGE_THEME_KEY = "ui_theme";          // "astro" | "dark" | "light"
+    const STORAGE_ROLLS_KEY = "total_rolls";       // number
+    const STORAGE_ADMIN_LOCK_KEY = "admin_locked"; // "1" or "0"
+
+    // -----------------------------
+    // 1) Data: your minerals list (kept as-is)
+    // -----------------------------
+    const minerals = [
+      { name: "Narox | 1/20K", chance: 1 / 20000, rarity: "Epic" },
+      { name: "Stone | 1/6", chance: 1 / 6, rarity: "Common" },
+      { name: "Gold | 1/300", chance: 1 / 300, rarity: "Common" },
+      { name: "Diamond | 1/2K", chance: 1 / 2000, rarity: "Uncommon" },
+      { name: "Quectiatricto | 1/777M", chance: 1 / 777777777, rarity: "Forsaken" },
+      { name: "Soulstone | 1/185K", chance: 1 / 185000, rarity: "Mythical" },
+      { name: "Sand | 1/25", chance: 1 / 25, rarity: "Common" },
+      { name: "Salt | 1/450", chance: 1 / 450, rarity: "Common" },
+      { name: "Coal | 1/20", chance: 1 / 20, rarity: "Common" },
+      { name: "Dark Stone | 1/6", chance: 1 / 6, rarity: "Common" },
+      { name: "Granite | 1/6", chance: 1 / 6, rarity: "Common" },
+      { name: "Andesite | 1/6", chance: 1 / 6, rarity: "Common" },
+      { name: "Obsidian | 1/6", chance: 1 / 6, rarity: "Common" },
+      { name: "Diorite | 1/6", chance: 1 / 6, rarity: "Common" },
+      { name: "Copper | 1/20", chance: 1 / 20, rarity: "Common" },
+      { name: "Celestine | 1/300", chance: 1 / 300, rarity: "Common" },
+      { name: "Amber | 1/1K", chance: 1 / 1000, rarity: "Uncommon" },
+      { name: "Ascendium | 1/900K", chance: 1 / 900000, rarity: "Godly" },
+      { name: "Cobalt | 1/5.4K", chance: 1 / 5450, rarity: "Rare" },
+      { name: "Citrine | 1/5.5K", chance: 1 / 5500, rarity: "Rare" },
+      { name: "Solarium | 1/15M", chance: 1 / 15000000, rarity: "Celestial" },
+      { name: "Cacarium | 1/5B", chance: 1 / 5000000000, rarity: "Infinity" },
+      { name: "Roazhon Celtic Kop | 1/25K", chance: 1 / 25000, rarity: "Legendary" },
+      { name: "Magnetite | 1/1.5K", chance: 1 / 1500, rarity: "Uncommon" },
+      { name: "Andromeda | 1/25.3M", chance: 1 / 25300000, rarity: "Cosmic" },
+      { name: "Sirius A | 1/255M", chance: 1 / 255000000, rarity: "Empyrean" },
+      { name: "Lapis Lazuli | 1/7.5K", chance: 1 / 7500, rarity: "Rare" },
+      { name: "Hourglass Of Balance | 1/22.45M", chance: 1 / 22450000, rarity: "Cosmic" },
+      { name: "Nickel | 1/1.25K", chance: 1 / 1250, rarity: "Uncommon" },
+      { name: "Nilaxite | 1/666.6K", chance: 1 / 666666, rarity: "Godly" },
+      { name: "Aerialite | 1/50K", chance: 1 / 50000, rarity: "Legendary" },
+      { name: "Aquamarine | 1/12.5K", chance: 1 / 12500, rarity: "Epic" },
+      { name: "Calcium | 1/3K", chance: 1 / 3000, rarity: "Rare" },
+      { name: "Calibrite | 1/225K", chance: 1 / 225000, rarity: "Mythical" },
+      { name: "Chlorite | 1/300", chance: 1 / 300, rarity: "Common" },
+      { name: "Galaxite | 1/300K", chance: 1 / 300000, rarity: "Godly" },
+      { name: "Bronze | 1/250", chance: 1 / 250, rarity: "Common" },
+      { name: "Steel | 1/2K", chance: 1 / 2000, rarity: "Uncommon" },
+      { name: "Teketite | 1/90K", chance: 1 / 90000, rarity: "Mythical" },
+      { name: "Lunarisite | 1/5M", chance: 1 / 5000000, rarity: "Exotic" },
+      { name: "Aetherium | 1/80M", chance: 1 / 80000000, rarity: "Heavenly" },
+      { name: "Astralite | 1/12.5M", chance: 1 / 12500000, rarity: "Celestial" },
+      { name: "Stellum | 1/14M", chance: 1 / 14000000, rarity: "Celestial" },
+      { name: "Cometium | 1/16M", chance: 1 / 16000000, rarity: "Celestial" },
+      { name: "Nebulite | 1/18M", chance: 1 / 18000000, rarity: "Celestial" },
+      { name: "Galaxium | 1/20M", chance: 1 / 20000000, rarity: "Celestial" },
+      { name: "Eternium | 1/578B", chance: 1/ 578000000, rarity: "Infinity" },
+      { name: "Clyderium | 1/100M", chance: 1 / 100000000, rarity: "Heavenly" },
+      { name: "Chrysoberyl | 1/10.5K", chance: 1 / 10500, rarity: "Epic" },
+      { name: "Petrified Wood | 1/48.7K", chance: 1 / 48750, rarity: "Legendary" },
+      { name: "Elusium | 1/155K", chance: 1 / 155000, rarity: "Mythical" },
+      { name: "Unobtainium | 1/630K", chance: 1 / 630000, rarity: "Godly" },
+      { name: "Aegistone | 1/2.8M", chance: 1 / 2800000, rarity: "Exotic" },
+      { name: "Scertanium | 1/3.5M", chance: 1 / 3500000, rarity: "Exotic" },
+      { name: "Pasivium | 1/21.2M", chance: 1 / 21200000, rarity: "Cosmic" },
+      { name: "Pastelorium | 1/43M", chance: 1 / 43000000, rarity: "Cosmic" },
+      { name: "Vaporwave Crystal | 1/90M", chance: 1 / 90000000, rarity: "Heavenly" },
+      { name: "Endozivite | 1/247M", chance: 1 / 247010000, rarity: "Heavenly" },
+      { name: "Bluesteel | 1/22.5K", chance: 1 / 22500, rarity: "Epic" },
+      { name: "Coldfirium | 1/65.2K", chance: 1 / 65200, rarity: "Legendary" },
+      { name: "Tanzanite | 1/95.5K", chance: 1 / 95550, rarity: "Mythical" },
+      { name: "Elysian | 1/120.5K", chance: 1 / 120555, rarity: "Mythical" },
+      { name: "Nocturnite | 1/670K", chance: 1 / 670000, rarity: "Godly" },
+      { name: "Freon | 1/3.3M", chance: 1 / 3333333, rarity: "Exotic" },
+      { name: "Snoblintium | 1/4.2M", chance: 1 / 4200000, rarity: "Exotic" },
+      { name: "Azuryl | 1/26.7M", chance: 1 / 26700000, rarity: "Cosmic" },
+      { name: "Glacielle | 1/31.4M", chance: 1 / 31400000, rarity: "Cosmic" },
+      { name: "Cybernetium | 1/52.4M", chance: 1 / 52400000, rarity: "Heavenly" },
+      { name: "Vanessium | 1/1.7M", chance: 1 / 1700000, rarity: "Exotic" },
+      { name: "Scotthium | 1/39.5M", chance: 1 / 39500000, rarity: "Cosmic" },
+      { name: "Inclemetite | 1/386M", chance: 1 / 386000000, rarity: "Paradoxal" },
+      { name: "Viridian | 1/65.5K", chance: 1 / 65500, rarity: "Legendary" },
+      { name: "Promethium | 1/198.5K", chance: 1 / 198500, rarity: "Godly" },
+      { name: "Newtonium | 1/755.05K", chance: 1 / 755050, rarity: "Exotic" },
+      { name: "Elexinite | 1/2.121M", chance: 1 / 2121000, rarity: "Exotic" },
+      { name: "Astatine | 1/4.2M", chance: 1 / 4200000, rarity: "Exotic" },
+      { name: "Sristium | 1/21.5M", chance: 1 / 21500000, rarity: "Cosmic" },
+      { name: "Erodimium | 1/35.9M", chance: 1 / 35900000, rarity: "Cosmic" },
+      { name: "Candilium | 1/82M", chance: 1 / 82000000, rarity: "Heavenly" },
+      { name: "Terratomere | 1/213.2M", chance: 1 / 213200000, rarity: "Empyrean" },
+      { name: "Chroma Contaris | 1/5.5K", chance: 1 / 5565, rarity: "Rare" },
+      { name: "Musgravite | 1/12.5K", chance: 1 / 12500, rarity: "Epic" },
+      { name: "Osmium | 1/27.1K", chance: 1 / 27100, rarity: "Legendary" },
+      { name: "Black Diamond | 1/48.9K", chance: 1 / 48980, rarity: "Legendary" },
+      { name: "Spatializine | 1/122.5K", chance: 1 / 122500, rarity: "Mythical" },
+      { name: "Lanthanite | 1/584K", chance: 1 / 584000, rarity: "Mythical" },
+      { name: "Neptunium | 1/4.39M", chance: 1 / 4390000, rarity: "Exotic" },
+      { name: "Acceleratium | 7.82M", chance: 1 / 7820000, rarity: "Celestial" },
+      { name: "Quandrium | 1/29.2M", chance: 1 / 29290000, rarity: "Cosmic" },
+      { name: "Lucidium | 1/43.2M", chance: 1 / 43211234, rarity: "Cosmic" },
+      { name: "Polarium | 1/50M", chance: 1 / 50000005, rarity: "Heavenly" },
+      { name: "Illusory Bubblegram | 1/426.8M", chance: 1 / 426800050, rarity: "Paradoxal" },
+      { name: "Painite | 1/24.2K", chance: 1 / 24200, rarity: "Epic" },
+      { name: "Adurite | 1/65K", chance: 1 / 65000, rarity: "Legendary" },
+      { name: "Jet | 1/25.5K", chance: 1 / 255000, rarity: "Mythical" },
+      { name: "Zefendium | 1/507K", chance: 1 / 507000, rarity: "Mythical" },
+      { name: "Exolite | 1/2.4M", chance: 1 / 2432100, rarity: "Exotic" },
+      { name: "Blazuine | 1/5.7M", chance: 1 / 5700000, rarity: "Exotic" },
+      { name: "Speatrium | 1/29.2M", chance: 1 / 29200000, rarity: "Cosmic" },
+      { name: "Sentient Viscera | 1/34.5M", chance: 1 / 34500000, rarity: "Cosmic" },
+      { name: "Inkonium | 1/62.7M", chance: 1 / 62700000, rarity: "Heavenly" },
+      { name: "Nyctophyte | 1/538M", chance: 1 / 538000000, rarity: "Primeval" },
+      { name: "Bismuth | 1/2K", chance: 1 / 2000, rarity: "Uncommon" },
+      { name: "Delectium | 1/40K", chance: 1 / 40000, rarity: "Legendary" },
+      { name: "Alexandrite | 1/73K", chance: 1 / 73000, rarity: "Legendary" },
+      { name: "Rainbonite | 1/150K", chance: 1 / 150000, rarity: "Mythical" },
+      { name: "Chromatite | 1/875K", chance: 1 / 875000, rarity: "Mythical" },
+      { name: "Temporum | 1/5.5M", chance: 1 / 5555555, rarity: "Exotic" },
+      { name: "Ornalium | 1/9.1M", chance: 1 / 9100000, rarity: "Celestial" },
+      { name: "Aether | 1/22M", chance: 1 / 22000000, rarity: "Cosmic" },
+      { name: "Trinitium | 1/33.3M", chance: 1 / 33333333, rarity: "Cosmic" },
+      { name: "Luminatite | 1/34.3M", chance: 1 / 34350000, rarity: "Cosmic" },
+      { name: "Elementium | 1/54M", chance: 1 / 54000000, rarity: "Heavenly" },
+      { name: "Idolium | 1/170M", chance: 1 / 170000000, rarity: "Empyrean" },
+      { name: "Ancient Bronze | 1/4.7K", chance: 1 / 4750, rarity: "Rare" },
+      { name: "Pyrite | 1/27.5K", chance: 1 / 27500, rarity: "Legendary" },
+      { name: "Solid Bromine | 1/85K", chance: 1 / 85000, rarity: "Mythical" },
+      { name: "Vanadinite | 1/300K", chance: 1 / 300000, rarity: "Mythical" },
+      { name: "Alternium | 1/525K", chance: 1 / 525000, rarity: "Mythical" },
+      { name: "Poiseon | 1/3,3M", chance: 1 / 3333333, rarity: "Exotic" },
+      { name: "Vitrilyx | 1/9M", chance: 1 / 9000000, rarity: "Celestial" },
+      { name: "Euclideum | 1/14.1M", chance: 1 / 14142135, rarity: "Celestial" },
+      { name: "Scarfyte | 1/25.5M", chance: 1 / 25500000, rarity: "Cosmic" },
+      { name: "Exoretic | 1/40M", chance: 1 / 40000000, rarity: "Cosmic" },
+      { name: "Albinite | 1/44.4M", chance: 1 / 44444444, rarity: "Cosmic" },
+      { name: "Magnetyx | 1/74.5M", chance: 1 / 74500000, rarity: "Heavenly" },
+      { name: "Scribbal | 1/200M", chance: 1 / 200000000, rarity: "Empyrean" },
+      { name: "Palladium | 1/3K", chance: 1 / 3000, rarity: "Rare" },
+      { name: "Magnesium | 1/13.2K", chance: 1 / 13215, rarity: "Epic" },
+      { name: "Core Fragment | 1/22K", chance: 1 / 22000, rarity: "Epic" },
+      { name: "Incinderium | 1/45K", chance: 1 / 45000, rarity: "Legendary" },
+      { name: "Sunstone | 1/55K", chance: 1 / 55000, rarity: "Legendary" },
+      { name: "Solarite | 1/500K", chance: 1 / 500000, rarity: "Mythical" },
+      { name: "Thundarian | 1/2.4M", chance: 1 / 2400000, rarity: "Exotic" },
+      { name: "Flaeon | 1/3.3M", chance: 1 / 3333333, rarity: "Exotic" },
+      { name: "Combustal | 1/5.5M", chance: 1 / 5500000, rarity: "Exotic" },
+      { name: "Suncindium | 1/20.5M", chance: 1 / 20500000, rarity: "Celestial" },
+      { name: "Cleopatrite | 1/22.5M", chance: 1 / 22500000, rarity: "Celestial" },
+      { name: "Xynarium | 1/28M", chance: 1 / 28000000, rarity: "Cosmic" },
+      { name: "Dyronsinite | 1/63M", chance: 1 / 63000000, rarity: "Heavenly" },
+      { name: "Gargantium | 1/71.3M", chance: 1 / 71300000, rarity: "Heavenly" },
+      { name: "Dynamo of Fate | 1/750M", chance: 1 / 750000000, rarity: "Forsaken" }
+    ];
+
+    // -----------------------------
+    // 2) Funny messages 
+    // -----------------------------
+    const funnyMessages = [
+      "You hit a rock... and the rock said 'Ouch!'",
+      "Mining minerals... like a miner lmao (its funny ok)!",
+      "You found a unicorn-shaped diamond! Just kidding, it's regular diamond.",
+      "Is it getting hot in here, or is it just your mining skills?",
+      "Mining minerals faster than a caffeinated squirrel!",
+      "Breaking rocks and taking names!",
+      "You uncovered the fabled 'Invisible Coal'. Congratulations!",
+      "Mining simulator 2023: The Reckoning!",
+      "A shiver runs down your spine...",
+      "A door creaks open on its own, making your heart skip a beat...",
+      "Bro, take a shower...",
+      "Jerome supporta la Roma",
+      "You struck gold! And by gold, I mean a gold-colored mineral."
+    ];
+
+    function showRandomFunnyMessage() {
+      const randomIndex = Math.floor(Math.random() * funnyMessages.length);
+      const message = funnyMessages[randomIndex];
+      document.getElementById("funnyMessages").textContent = message;
+    }
+
+    function startFunnyMessagesInterval() {
+      showRandomFunnyMessage();
+      setInterval(showRandomFunnyMessage, 15000); // 15s
+    }
+
+    startFunnyMessagesInterval();
+
+    // -----------------------------
+    // 3) State
+    // -----------------------------
+    let inventory = [];                 // [{name, amount}]
+    let sortMode = "rarity";            // "rarity" | "amount"
+    let totalRolls = 0;                 // counts every Mine click
+    let adminUnlocked = false;          // admin lock state (local-only)
+    const ADMIN_PIN = "1337";           // change this if you want (set "" to disable PIN)
+
+    // -----------------------------
+    // 4) DOM
+    // -----------------------------
+    const mineButton = document.getElementById("mineButton");
+    const resetButton = document.getElementById("resetButton");
+    const exportButton = document.getElementById("exportButton");
+    const importButton = document.getElementById("importButton");
+
+    const themeButton = document.getElementById("themeButton");
+    const adminButton = document.getElementById("adminButton");
+
+    const inventoryBody = document.getElementById("inventoryBody");
+    const inventoryCount = document.getElementById("inventoryCount");
+
+    const totalMinedEl = document.getElementById("totalMined");
+    const totalMinedSubEl = document.getElementById("totalMinedSub");
+    const uniqueMinedEl = document.getElementById("uniqueMined");
+    const lastDropEl = document.getElementById("lastDrop");
+    const lastDropRarityEl = document.getElementById("lastDropRarity");
+    const totalRollsEl = document.getElementById("totalRolls");
+
+    const announcementDiv = document.getElementById("announcement");
+    const searchInput = document.getElementById("searchInput");
+    const sortToggleButton = document.getElementById("sortToggleButton");
+
+    // Admin modal DOM
+    const adminBackdrop = document.getElementById("adminBackdrop");
+    const adminCloseButton = document.getElementById("adminCloseButton");
+    const adminDoneButton = document.getElementById("adminDoneButton");
+
+    const adminPinInput = document.getElementById("adminPinInput");
+    const adminUnlockButton = document.getElementById("adminUnlockButton");
+    const adminLockButton = document.getElementById("adminLockButton");
+
+    const adminMineralSelect = document.getElementById("adminMineralSelect");
+    const adminAmountInput = document.getElementById("adminAmountInput");
+    const adminGiveButton = document.getElementById("adminGiveButton");
+    const adminSetButton = document.getElementById("adminSetButton");
+
+    const adminRoll10Button = document.getElementById("adminRoll10Button");
+    const adminRoll100Button = document.getElementById("adminRoll100Button");
+    const adminRoll1000Button = document.getElementById("adminRoll1000Button");
+
+    const adminClearButton = document.getElementById("adminClearButton");
+    const adminWipeAllButton = document.getElementById("adminWipeAllButton");
+
+    const adminExportButton = document.getElementById("adminExportButton");
+    const adminImportButton = document.getElementById("adminImportButton");
+    const adminCopyStatsButton = document.getElementById("adminCopyStatsButton");
+
+    // -----------------------------
+    // 5) Events
+    // -----------------------------
+    mineButton.addEventListener("click", mine);
+    resetButton.addEventListener("click", reset);
+
+    exportButton.addEventListener("click", exportSave);
+    importButton.addEventListener("click", importSave);
+
+    themeButton.addEventListener("click", cycleTheme);
+    adminButton.addEventListener("click", openAdmin);
+
+    searchInput.addEventListener("input", () => updateInventory());
+    sortToggleButton.addEventListener("click", () => {
+      sortMode = (sortMode === "rarity") ? "amount" : "rarity";
+      sortToggleButton.textContent = (sortMode === "rarity") ? "Rarity" : "Amount";
+      showAnnouncement(`Sort mode: ${sortToggleButton.textContent}`);
+      updateInventory();
+    });
+
+    // Keyboard shortcuts:
+    // - M = mine
+    // - R = reset
+    // - A = admin
+    // - Esc = close admin
+    document.addEventListener("keydown", (e) => {
+      const tag = (document.activeElement && document.activeElement.tagName) ? document.activeElement.tagName.toLowerCase() : "";
+      const typing = (tag === "input" || tag === "textarea" || tag === "select");
+
+      if (e.key === "Escape") {
+        closeAdmin();
+        return;
+      }
+
+      if (typing) return;
+
+      if (e.key.toLowerCase() === "m") mine();
+      if (e.key.toLowerCase() === "r") reset();
+      if (e.key.toLowerCase() === "a") openAdmin();
+    });
+
+    // Admin modal interactions
+    adminCloseButton.addEventListener("click", closeAdmin);
+    adminDoneButton.addEventListener("click", closeAdmin);
+
+    // Clicking the backdrop closes (but not clicking inside modal)
+    adminBackdrop.addEventListener("click", (e) => {
+      if (e.target === adminBackdrop) closeAdmin();
+    });
+
+    adminUnlockButton.addEventListener("click", () => {
+      if (ADMIN_PIN === "") {
+        adminUnlocked = true;
+        persistAdminLock(false);
+        updateAdminUI();
+        showAnnouncement("Admin unlocked ✅");
+        return;
+      }
+
+      const pin = String(adminPinInput.value || "");
+      if (pin === ADMIN_PIN) {
+        adminUnlocked = true;
+        persistAdminLock(false);
+        updateAdminUI();
+        showAnnouncement("Admin unlocked ✅");
+      } else {
+        showAnnouncement("Wrong PIN ❌");
+      }
+    });
+
+    adminLockButton.addEventListener("click", () => {
+      adminUnlocked = false;
+      persistAdminLock(true);
+      updateAdminUI();
+      showAnnouncement("Admin locked 🔒");
+    });
+
+    adminGiveButton.addEventListener("click", () => {
+      if (!requireAdmin()) return;
+      const mineralName = adminMineralSelect.value;
+      const amount = clampInt(adminAmountInput.value, 1, 999999999);
+      addMineral(mineralName, amount);
+      showAnnouncement(`Admin: gave ${amount}x ${mineralName}`);
+    });
+
+    adminSetButton.addEventListener("click", () => {
+      if (!requireAdmin()) return;
+      const mineralName = adminMineralSelect.value;
+      const amount = clampInt(adminAmountInput.value, 0, 999999999);
+      setMineralAmount(mineralName, amount);
+      showAnnouncement(`Admin: set ${mineralName} = ${amount}`);
+    });
+
+    adminRoll10Button.addEventListener("click", () => { if (requireAdmin()) mineMany(10); });
+    adminRoll100Button.addEventListener("click", () => { if (requireAdmin()) mineMany(100); });
+    adminRoll1000Button.addEventListener("click", () => { if (requireAdmin()) mineMany(1000); });
+
+    adminClearButton.addEventListener("click", () => {
+      if (!requireAdmin()) return;
+      if (!confirm("Clear inventory?")) return;
+      inventory = [];
+      saveInventory();
+      updateInventory();
+      updateTotalMined();
+      updateUniqueMined();
+      showAnnouncement("Admin: inventory cleared 🧹");
+    });
+
+    adminWipeAllButton.addEventListener("click", () => {
+      if (!requireAdmin()) return;
+      if (!confirm("Wipe ALL storage (inventory, rolls, theme, admin lock)?")) return;
+      localStorage.clear();
+      inventory = [];
+      totalRolls = 0;
+      adminUnlocked = false;
+      applyTheme("astro"); // restore default
+      persistTheme("astro");
+      persistRolls(0);
+      persistAdminLock(true);
+      updateAllUI();
+      showAnnouncement("Wiped all local storage ✅");
+      closeAdmin();
+    });
+
+    adminExportButton.addEventListener("click", exportSave);
+    adminImportButton.addEventListener("click", importSave);
+
+    adminCopyStatsButton.addEventListener("click", () => {
+      if (!requireAdmin()) return;
+      const txt = buildStatsText();
+      copyToClipboard(txt)
+        .then(() => showAnnouncement("Stats copied ✅"))
+        .catch(() => showAnnouncement("Clipboard blocked ❌"));
+    });
+
+    // -----------------------------
+    // 6) Load saved state
+    // -----------------------------
+    // Inventory
+    if (localStorage.getItem(STORAGE_KEY)) {
+      try { inventory = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+      catch { inventory = []; }
+    }
+
+    // Rolls
+    totalRolls = clampInt(localStorage.getItem(STORAGE_ROLLS_KEY), 0, 999999999);
+
+    // Theme (DEFAULT MUST BE ASTRO)
+    const savedTheme = (localStorage.getItem(STORAGE_THEME_KEY) || "astro").toLowerCase();
+    applyTheme(savedTheme);          // sets html[data-theme]
+    updateThemeButtonUI(savedTheme); // sets emoji + title
+
+    // Admin lock state (default locked)
+    const locked = (localStorage.getItem(STORAGE_ADMIN_LOCK_KEY) ?? "1") === "1";
+    adminUnlocked = !locked;
+
+    // Populate admin mineral select
+    populateAdminMineralSelect();
+
+    // Initial UI render
+    updateAllUI();
+    updateAdminUI();
+
+    // -----------------------------
+    // 7) Core gameplay
+    // -----------------------------
+    function mine() {
+      const minedMineral = getRandomMineral();
+      if (!minedMineral) return;
+
+      totalRolls++;
+      persistRolls(totalRolls);
+
+      const existingMineral = inventory.find(item => item.name === minedMineral.name);
+      if (existingMineral) existingMineral.amount++;
+      else inventory.push({ name: minedMineral.name, amount: 1 });
+
+      // UI
+      updateInventory();
+      saveInventory();
+
+      lastDropEl.textContent = minedMineral.name;
+      lastDropRarityEl.textContent = `rarity: ${minedMineral.rarity}`;
+
+      showAnnouncement(`You got ${minedMineral.rarity} — ${minedMineral.name}`);
+      updateTotalMined();
+      updateUniqueMined();
+      updateRollsUI();
+    }
+
+    function reset() {
+      inventory = [];
+      updateInventory();
+      saveInventory();
+      showAnnouncement("Inventory reset.");
+      lastDropEl.textContent = "—";
+      lastDropRarityEl.textContent = "rarity: —";
+      updateTotalMined();
+      updateUniqueMined();
+    }
+
+    // Weighted random
+    function getRandomMineral() {
+      const totalChances = minerals.reduce((total, mineral) => total + mineral.chance, 0);
+      const randomValue = Math.random() * totalChances;
+      let cumulativeChance = 0;
+
+      for (const mineral of minerals) {
+        cumulativeChance += mineral.chance;
+        if (randomValue <= cumulativeChance) return mineral;
+      }
+      return minerals[minerals.length - 1];
+    }
+
+    // Mine N times (admin helper)
+    function mineMany(n) {
+      const loops = clampInt(n, 1, 100000);
+      for (let i = 0; i < loops; i++) {
+        const minedMineral = getRandomMineral();
+        totalRolls++;
+        const existing = inventory.find(item => item.name === minedMineral.name);
+        if (existing) existing.amount++;
+        else inventory.push({ name: minedMineral.name, amount: 1 });
+      }
+
+      persistRolls(totalRolls);
+      saveInventory();
+      updateAllUI();
+      showAnnouncement(`Admin: mined x${loops} ✅`);
+    }
+
+    // -----------------------------
+    // 8) Inventory sorting + rendering
+    // -----------------------------
+    function sortInventory() {
+      const query = (searchInput.value || "").trim().toLowerCase();
+      const filtered = inventory.filter(item => item.name.toLowerCase().includes(query));
+
+      if (sortMode === "amount") {
+        return filtered.sort((a, b) => {
+          if (b.amount !== a.amount) return b.amount - a.amount;
+          const ma = minerals.find(m => m.name === a.name);
+          const mb = minerals.find(m => m.name === b.name);
+          const ca = ma ? ma.chance : 1;
+          const cb = mb ? mb.chance : 1;
+          return ca - cb;
+        });
+      }
+
+      return filtered.sort((a, b) => {
+        const mineralA = minerals.find(mineral => mineral.name === a.name);
+        const mineralB = minerals.find(mineral => mineral.name === b.name);
+        const chanceA = mineralA ? mineralA.chance : 1;
+        const chanceB = mineralB ? mineralB.chance : 1;
+        return chanceA - chanceB;
+      });
+    }
+
+    function updateInventory() {
+      const sortedInventory = sortInventory();
+      const frag = document.createDocumentFragment();
+
+      for (const item of sortedInventory) {
+        const mineral = minerals.find(m => m.name === item.name);
+        const rarityClass = (mineral?.rarity || "common").toLowerCase();
+
+        const tr = document.createElement("tr");
+        tr.className = rarityClass;
+
+        const tdName = document.createElement("td");
+        tdName.textContent = item.name;
+
+        const tdAmount = document.createElement("td");
+        tdAmount.textContent = String(item.amount);
+
+        tr.appendChild(tdName);
+        tr.appendChild(tdAmount);
+        frag.appendChild(tr);
+      }
+
+      inventoryBody.innerHTML = "";
+      inventoryBody.appendChild(frag);
+      inventoryCount.textContent = String(sortedInventory.length);
+    }
+
+    function updateTotalMined() {
+      const totalMined = inventory.reduce((total, item) => total + item.amount, 0);
+      totalMinedEl.textContent = String(totalMined);
+      totalMinedSubEl.textContent = "minerals";
+    }
+
+    function updateUniqueMined() {
+      uniqueMinedEl.textContent = String(inventory.length);
+    }
+
+    function updateRollsUI() {
+      totalRollsEl.textContent = String(totalRolls);
+    }
+
+    function updateAllUI() {
+      updateInventory();
+      updateTotalMined();
+      updateUniqueMined();
+      updateRollsUI();
+    }
+
+    // -----------------------------
+    // 9) Save / Autosave
+    // -----------------------------
+    function saveInventory() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(inventory));
+    }
+
+    const saveInterval = 600000; // 10 minutes
+    setInterval(saveInventory, saveInterval);
+
+    // -----------------------------
+    // 10) Toast / Announcement
+    // -----------------------------
+    let announcementTimeout;
+    function showAnnouncement(message) {
+      clearTimeout(announcementTimeout);
+
+      announcementDiv.textContent = message;
+      announcementDiv.classList.add("show");
+
+      announcementTimeout = setTimeout(() => {
+        announcementDiv.classList.remove("show");
+        setTimeout(() => { announcementDiv.textContent = ""; }, 250);
+      }, 2500);
+    }
+
+    // -----------------------------
+    // 11) Export / Import save
+    // -----------------------------
+    function exportSave() {
+      const data = JSON.stringify(inventory, null, 2);
+      copyToClipboard(data)
+        .then(() => showAnnouncement("Save copied to clipboard ✅"))
+        .catch(() => downloadText("mining-save.json", data));
+    }
+
+    function importSave() {
+      const raw = prompt("Paste your save JSON here:");
+      if (!raw) return;
+
+      try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) throw new Error("Save must be an array");
+
+        const clean = parsed
+          .filter(x => x && typeof x.name === "string" && Number.isFinite(Number(x.amount)))
+          .map(x => ({ name: x.name, amount: Math.max(0, Math.floor(Number(x.amount))) }));
+
+        inventory = clean;
+        saveInventory();
+        updateAllUI();
+        showAnnouncement("Save imported ✅");
+      } catch {
+        showAnnouncement("Invalid save JSON ❌");
+      }
+    }
+
+    function downloadText(filename, text) {
+      const blob = new Blob([text], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
+      showAnnouncement("Save downloaded ✅");
+    }
+
+    function copyToClipboard(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text);
+      }
+      return Promise.reject(new Error("clipboard not available"));
+    }
+
+    // -----------------------------
+    // 12) Theme switcher 
+    // - Astro must be default
+    // - Button cycles: astro -> dark -> light -> astro ...
+    // -----------------------------
+    function applyTheme(theme) {
+      const t = (theme || "astro").toLowerCase();
+      // html dataset: astro maps to no "dark/light" overrides, but we still set a value for consistency
+      if (t === "dark") document.documentElement.setAttribute("data-theme", "dark");
+      else if (t === "light") document.documentElement.setAttribute("data-theme", "light");
+      else document.documentElement.setAttribute("data-theme", "astro");
+    }
+
+    function persistTheme(theme) {
+      localStorage.setItem(STORAGE_THEME_KEY, theme);
+    }
+
+    function updateThemeButtonUI(theme) {
+      const t = (theme || "astro").toLowerCase();
+      if (t === "dark") {
+        themeButton.textContent = "🌙";
+        themeButton.title = "Theme: Dark";
+      } else if (t === "light") {
+        themeButton.textContent = "☀️";
+        themeButton.title = "Theme: Light";
+      } else {
+        themeButton.textContent = "🌌";
+        themeButton.title = "Theme: Astro (default)";
+      }
+    }
+
+    function cycleTheme() {
+      const current = (localStorage.getItem(STORAGE_THEME_KEY) || "astro").toLowerCase();
+      const next = (current === "astro") ? "dark" : (current === "dark") ? "light" : "astro";
+
+      applyTheme(next);
+      persistTheme(next);
+      updateThemeButtonUI(next);
+      showAnnouncement(`Theme: ${capitalize(next)}`);
+    }
+
+    // -----------------------------
+    // 13) Admin Panel (NEW)
+    // -----------------------------
+    function openAdmin() {
+      adminBackdrop.style.display = "flex";
+      adminBackdrop.setAttribute("aria-hidden", "false");
+      updateAdminUI();
+    }
+
+    function closeAdmin() {
+      adminBackdrop.style.display = "none";
+      adminBackdrop.setAttribute("aria-hidden", "true");
+    }
+
+    function persistAdminLock(locked) {
+      localStorage.setItem(STORAGE_ADMIN_LOCK_KEY, locked ? "1" : "0");
+    }
+
+    function requireAdmin() {
+      if (adminUnlocked) return true;
+      showAnnouncement("Admin is locked 🔒 (enter PIN)");
+      return false;
+    }
+
+    function updateAdminUI() {
+      // Disable admin actions when locked
+      const disabled = !adminUnlocked;
+
+      const actionButtons = [
+        adminGiveButton, adminSetButton,
+        adminRoll10Button, adminRoll100Button, adminRoll1000Button,
+        adminClearButton, adminWipeAllButton,
+        adminExportButton, adminImportButton, adminCopyStatsButton
+      ];
+
+      actionButtons.forEach(btn => btn.disabled = disabled);
+
+      adminPinInput.value = "";
+    }
+
+    function populateAdminMineralSelect() {
+      adminMineralSelect.innerHTML = "";
+      // Sort by chance (rarest first) so admin can pick cool stuff quickly
+      const sorted = [...minerals].sort((a, b) => a.chance - b.chance);
+
+      for (const m of sorted) {
+        const opt = document.createElement("option");
+        opt.value = m.name;
+        opt.textContent = `${m.rarity} — ${m.name}`;
+        adminMineralSelect.appendChild(opt);
+      }
+    }
+
+    function addMineral(mineralName, amount) {
+      const amt = clampInt(amount, 1, 999999999);
+      const existing = inventory.find(i => i.name === mineralName);
+      if (existing) existing.amount += amt;
+      else inventory.push({ name: mineralName, amount: amt });
+
+      saveInventory();
+      updateAllUI();
+    }
+
+    function setMineralAmount(mineralName, amount) {
+      const amt = clampInt(amount, 0, 999999999);
+      const existing = inventory.find(i => i.name === mineralName);
+      if (existing) existing.amount = amt;
+      else inventory.push({ name: mineralName, amount: amt });
+
+      // Remove 0 amounts to keep inventory clean
+      inventory = inventory.filter(i => i.amount > 0);
+
+      saveInventory();
+      updateAllUI();
+    }
+
+    function buildStatsText() {
+      const totalMined = inventory.reduce((t, i) => t + i.amount, 0);
+      const unique = inventory.length;
+
+      // Top 10 by amount
+      const top = [...inventory]
+        .sort((a, b) => b.amount - a.amount)
+        .slice(0, 10);
+
+      const lines = [];
+      lines.push("Mining Game — Stats");
+      lines.push(`Total mined: ${totalMined}`);
+      lines.push(`Unique minerals: ${unique}`);
+      lines.push(`Total rolls: ${totalRolls}`);
+      lines.push("");
+      lines.push("Top minerals (by amount):");
+      top.forEach((x, idx) => lines.push(`${idx + 1}. ${x.name} — ${x.amount}`));
+
+      return lines.join("\n");
+    }
+
+    // -----------------------------
+    // 14) Rolls persistence
+    // -----------------------------
+    function persistRolls(n) {
+      localStorage.setItem(STORAGE_ROLLS_KEY, String(clampInt(n, 0, 999999999)));
+    }
+
+    // -----------------------------
+    // 15) Helpers
+    // -----------------------------
+    function clampInt(value, min, max) {
+      const n = Math.floor(Number(value));
+      if (!Number.isFinite(n)) return min;
+      return Math.max(min, Math.min(max, n));
+    }
+
+    function capitalize(s) {
+      if (!s) return s;
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+  </script>
+</body>
+</html>
