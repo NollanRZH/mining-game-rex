@@ -1,6 +1,7 @@
 # ⛏️ Mining Game — Rex
 ![Made in France](https://img.shields.io/badge/Made%20in-France-%230055A4?style=for-the-badge&labelColor=%23EF4135&logoColor=white)
 ![BZH](https://img.shields.io/badge/BZH-Bretagne-000000?style=for-the-badge&logoColor=white)
+![License](https://img.shields.io/badge/License-Copyright%20%7C%20All%20Rights%20Reserved-red?style=for-the-badge)
 
 
 ![HTML5](https://img.shields.io/badge/HTML5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
