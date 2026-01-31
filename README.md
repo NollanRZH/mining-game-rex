@@ -129,4 +129,5 @@ Toute reproduction, copie, modification, redistribution ou utilisation, partiell
 Si tu veux utiliser une partie du projet (collab, autorisation, partenariat), contacte les auteurs via GitHub.
 
 Manager : nollandroguetpro@gmail.com
+Helper : melanlecoeuvre.pro@mail.com
 
