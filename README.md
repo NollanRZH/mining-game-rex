@@ -14,7 +14,7 @@
 ![Single File](https://img.shields.io/badge/Single--File-Yes-6A5ACD?style=for-the-badge)
 ![LocalStorage](https://img.shields.io/badge/Save-LocalStorage-2ea44f?style=for-the-badge)
 
-🇫🇷 **100% français** — conçu avec passion en **Bretagne**, par des **Bretons de Rennes**.  
+🇫🇷 **100% français** conçu avec passion en **Bretagne**, par des **Bretons de Rennes**.  
 Une vraie pépite locale : du mining, des étoiles, et du RNG absolument violent ! 🌌✨
 
 (Vive la Bretagne, et vive la France !!!!!!!!!!!!!!!!)
@@ -108,13 +108,11 @@ Ce jeu est un projet fun et expérimental visant à :
 
 ## 🛠️ Roadmap (idées futures)
 
-- 🌗 Thèmes (Clair / Sombre / Astro)
-- 🛡️ Admin panel (stats avancées / debug)
 - 🏆 Succès / Achievements
 - 🔁 Prestige / Rebirth
 - 🤖 Auto-miners / boosts
 - 🔊 Sons & musique
-- ☁️ Sauvegarde cloud (optionnel)
+- ☁️ Sauvegarde cloud 
 
 ---
 
