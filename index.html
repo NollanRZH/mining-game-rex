@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mining Game : Mine 1 — Rex</title>
+  <title>Mining Game : Mine 1 — Rex (Enhanced Edition)</title>
 
   <style>
-    /* Default = ASTRO */
+    /* Variables CSS */
     :root{
       --bg0:#05060a;
       --bg1:#0a0e1a;
@@ -20,6 +20,7 @@
       --good:#4CAF50;
       --danger:#f44336;
       --info:#2196F3;
+      --warning:#ff9800;
 
       --shadow: 0 18px 60px rgba(0,0,0,0.55);
       --shadow2: 0 10px 30px rgba(0,0,0,0.45);
@@ -32,17 +33,14 @@
       --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-      /* Accent (used for focus rings etc.) */
       --accent: rgba(91,179,255,0.55);
 
-      /* Background gradients for the current theme */
       --bg-grad-1: radial-gradient(1200px 800px at 20% 10%, rgba(65,255,255,0.10), transparent 55%);
       --bg-grad-2: radial-gradient(1100px 750px at 80% 20%, rgba(255,65,65,0.10), transparent 60%);
       --bg-grad-3: radial-gradient(900px 600px at 55% 90%, rgba(0,145,255,0.10), transparent 60%);
       --bg-grad-4: linear-gradient(180deg, var(--bg0), var(--bg1));
     }
 
-    /* Dark theme (more neutral, less spacey) */
     html[data-theme="dark"]{
       --bg0:#07080c;
       --bg1:#0c0f17;
@@ -60,7 +58,6 @@
       --bg-grad-4: linear-gradient(180deg, var(--bg0), var(--bg1));
     }
 
-    /* Light theme (still keeps your FR border vibe) */
     html[data-theme="light"]{
       --bg0:#f6f7fb;
       --bg1:#e8ecf8;
@@ -97,7 +94,6 @@
       overflow-x:hidden;
     }
 
-    /* Fancy French border*/
     .frame{
       min-height:100%;
       border: 6px solid transparent;
@@ -107,7 +103,6 @@
       isolation:isolate;
     }
 
-    /* Subtle grain overlay (adjust for light theme) */
     .frame::before{
       content:"";
       position:absolute;
@@ -124,7 +119,6 @@
       mix-blend-mode: multiply;
     }
 
-    /* Floating stars (kept) — disabled on light theme for clarity */
     .star{
       position:absolute;
       width:2px;
@@ -148,19 +142,35 @@
       50%      { opacity:1; transform:scale(1.8); }
     }
 
-    /* Layout */
+    /* Particle effect */
+    .particle{
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      font-size: 28px;
+      animation: particleFly 1.5s ease-out forwards;
+    }
+
+    @keyframes particleFly{
+      0%{ opacity:1; transform: translateY(0) scale(1) rotate(0deg); }
+      100%{ opacity:0; transform: translateY(-200px) scale(0.3) rotate(360deg); }
+    }
+
     .container{
-      max-width: 1180px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 22px 16px 40px;
       display:grid;
       gap: 18px;
-      grid-template-columns: 360px 1fr;
+      grid-template-columns: 380px 1fr;
       align-items:start;
     }
 
-    @media (max-width: 980px){
-      .container{ grid-template-columns: 1fr; }
+    @media (max-width: 1100px){
+      .container{ 
+        grid-template-columns: 1fr; 
+        max-width: 800px;
+      }
     }
 
     header.hero{
@@ -179,6 +189,12 @@
       top: 10px;
       z-index: 5;
       backdrop-filter: blur(10px);
+      animation: slideDown 0.5s ease-out;
+    }
+
+    @keyframes slideDown{
+      from{ opacity: 0; transform: translateY(-30px); }
+      to{ opacity: 1; transform: translateY(0); }
     }
 
     .title-wrap{
@@ -203,7 +219,6 @@
       100%{ color:#ff5c5c; }
     }
 
-    /* Light theme: stop animated rainbow title (cleaner) */
     html[data-theme="light"] h1{
       animation: none;
       color: #0d1020;
@@ -214,7 +229,6 @@
       font-size: 13px;
     }
 
-    /* Buttons */
     .btn-row{
       display:flex;
       flex-wrap:wrap;
@@ -231,8 +245,10 @@
       border-radius: 14px;
       font-weight: 700;
       cursor: pointer;
-      transition: transform .18s ease, background-color .18s ease, border-color .18s ease, box-shadow .18s ease;
+      transition: all .18s ease;
       box-shadow: var(--shadow2);
+      position: relative;
+      overflow: hidden;
     }
 
     html[data-theme="light"] button{
@@ -240,7 +256,7 @@
     }
 
     button:hover{
-      transform: translateY(-1px) scale(1.03);
+      transform: translateY(-2px) scale(1.03);
       background: rgba(255,255,255,0.10);
       border-color: rgba(255,255,255,0.18);
     }
@@ -275,7 +291,11 @@
       border-color: rgba(33,150,243,0.35);
     }
 
-    /* Theme / Admin icon buttons */
+    .btn-warning{
+      background: linear-gradient(180deg, rgba(255,152,0,0.26), rgba(255,152,0,0.11));
+      border-color: rgba(255,152,0,0.35);
+    }
+
     .icon-btn{
       width: 44px;
       height: 44px;
@@ -288,7 +308,6 @@
       line-height: 1;
     }
 
-    /* Cards / panels */
     .card{
       border-radius: var(--radius2);
       background: linear-gradient(180deg, var(--panel2), var(--panel));
@@ -296,6 +315,12 @@
       box-shadow: var(--shadow);
       overflow:hidden;
       backdrop-filter: blur(10px);
+      animation: cardSlideIn 0.5s ease-out;
+    }
+
+    @keyframes cardSlideIn{
+      from{ opacity: 0; transform: translateY(20px); }
+      to{ opacity: 1; transform: translateY(0); }
     }
 
     .card .card-h{
@@ -326,7 +351,6 @@
       padding: 14px 16px 16px;
     }
 
-    /* Controls */
     .controls{
       display:grid;
       gap: 10px;
@@ -341,9 +365,10 @@
     label{
       font-size: 12px;
       color: var(--muted);
+      font-weight: 600;
     }
 
-    input[type="text"], input[type="number"], select{
+    input[type="text"], input[type="number"], input[type="range"], select{
       width: 100%;
       padding: 10px 12px;
       border-radius: 14px;
@@ -351,11 +376,12 @@
       background: rgba(0,0,0,0.25);
       color: var(--text);
       outline:none;
-      transition: border-color .18s ease, box-shadow .18s ease;
+      transition: all .18s ease;
     }
 
     html[data-theme="light"] input[type="text"],
     html[data-theme="light"] input[type="number"],
+    html[data-theme="light"] input[type="range"],
     html[data-theme="light"] select{
       background: rgba(255,255,255,0.92);
       border: 1px solid rgba(10,20,60,0.14);
@@ -369,6 +395,33 @@
       box-shadow: 0 0 0 4px rgba(91,179,255,0.15);
     }
 
+    input[type="range"]{
+      padding: 0;
+      height: 8px;
+      background: rgba(255,255,255,0.14);
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb{
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    input[type="range"]::-moz-range-thumb{
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
     .toggle{
       display:flex;
       align-items:center;
@@ -378,6 +431,11 @@
       border-radius: 14px;
       border: 1px solid rgba(255,255,255,0.14);
       background: rgba(0,0,0,0.18);
+      transition: all 0.2s ease;
+    }
+
+    .toggle:hover{
+      background: rgba(0,0,0,0.25);
     }
 
     html[data-theme="light"] .toggle{
@@ -393,7 +451,6 @@
       box-shadow: none;
     }
 
-    /* Stats */
     .stats{
       display:grid;
       gap: 10px;
@@ -405,6 +462,12 @@
       border-radius: 16px;
       background: rgba(0,0,0,0.18);
       border: 1px solid rgba(255,255,255,0.10);
+      transition: all 0.3s ease;
+    }
+
+    .stat:hover{
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,0.18);
     }
 
     html[data-theme="light"] .stat{
@@ -433,7 +496,6 @@
       color: rgba(13,16,32,0.55);
     }
 
-    /* Funny message */
     #funnyMessages{
       font-size: 13px;
       color: #ffd700;
@@ -446,6 +508,11 @@
       align-items:center;
       justify-content:center;
       text-align:center;
+      transition: all 0.3s ease;
+    }
+
+    #funnyMessages:hover{
+      transform: scale(1.02);
     }
 
     html[data-theme="light"] #funnyMessages{
@@ -454,7 +521,6 @@
       color: #a66b00;
     }
 
-    /* Inventory table */
     .table-wrap{
       max-height: 58vh;
       overflow:auto;
@@ -502,6 +568,10 @@
       border-bottom: 1px solid rgba(10,20,60,0.08);
     }
 
+    tbody tr{
+      transition: all 0.2s ease;
+    }
+
     tbody tr:hover td{
       background: rgba(255,255,255,0.04);
     }
@@ -510,40 +580,38 @@
       background: rgba(0,145,255,0.06);
     }
 
-    /* Toast announcement */
     #announcement{
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
       bottom: 22px;
       z-index: 999;
-      padding: 10px 14px;
+      padding: 12px 18px;
       border-radius: 16px;
-      background: rgba(0,0,0,0.62);
+      background: rgba(0,0,0,0.82);
       border: 1px solid rgba(255,255,255,0.14);
       box-shadow: var(--shadow2);
       max-width: min(720px, calc(100% - 26px));
       text-align:center;
       opacity: 0;
       pointer-events:none;
-      transition: opacity .18s ease, transform .18s ease;
-      backdrop-filter: blur(8px);
+      transition: all .3s ease;
+      backdrop-filter: blur(12px);
       font-weight: 800;
       color: rgba(233,236,241,0.95);
     }
 
     html[data-theme="light"] #announcement{
-      background: rgba(255,255,255,0.86);
+      background: rgba(255,255,255,0.92);
       border: 1px solid rgba(10,20,60,0.16);
       color: rgba(13,16,32,0.92);
     }
 
     #announcement.show{
       opacity: 1;
-      transform: translateX(-50%) translateY(-2px);
+      transform: translateX(-50%) translateY(-4px);
     }
 
-    /* Footer */
     #credits{
       grid-column: 1 / -1;
       color: rgba(233,236,241,0.65);
@@ -556,8 +624,8 @@
       color: rgba(13,16,32,0.62);
     }
 
-    /* Small helpers */
     .muted{ color: var(--muted); }
+    
     .chip{
       display:inline-flex;
       align-items:center;
@@ -569,6 +637,7 @@
       font-size: 12px;
       color: rgba(233,236,241,0.82);
     }
+    
     html[data-theme="light"] .chip{
       background: rgba(255,255,255,0.80);
       border: 1px solid rgba(10,20,60,0.14);
@@ -587,37 +656,49 @@
       border: 1px solid rgba(255,255,255,0.12);
       color: rgba(233,236,241,0.85);
     }
+    
     html[data-theme="light"] .kbd{
       background: rgba(10,20,60,0.06);
       border: 1px solid rgba(10,20,60,0.12);
       color: rgba(13,16,32,0.78);
     }
 
-    /* =========================================================
-       ADMIN MODAL 
-       ========================================================= */
     .modal-backdrop{
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.55);
+      background: rgba(0,0,0,0.65);
       display:none;
       align-items:center;
       justify-content:center;
       z-index: 2000;
       padding: 18px;
+      animation: fadeIn 0.3s ease;
     }
+
+    @keyframes fadeIn{
+      from{ opacity: 0; }
+      to{ opacity: 1; }
+    }
+
     html[data-theme="light"] .modal-backdrop{
       background: rgba(13,16,32,0.42);
     }
 
     .modal{
-      width: min(860px, 100%);
+      width: min(900px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
       border-radius: 22px;
       border: 1px solid var(--stroke);
       background: linear-gradient(180deg, var(--panel2), var(--panel));
       box-shadow: var(--shadow);
-      overflow:hidden;
       backdrop-filter: blur(14px);
+      animation: modalSlideIn 0.4s ease-out;
+    }
+
+    @keyframes modalSlideIn{
+      from{ opacity: 0; transform: translateY(-30px) scale(0.95); }
+      to{ opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .modal-h{
@@ -627,14 +708,20 @@
       gap: 12px;
       padding: 14px 16px;
       border-bottom: 1px solid rgba(255,255,255,0.08);
+      position: sticky;
+      top: 0;
+      background: linear-gradient(180deg, var(--panel2), var(--panel));
+      backdrop-filter: blur(14px);
+      z-index: 10;
     }
+    
     html[data-theme="light"] .modal-h{
       border-bottom: 1px solid rgba(10,20,60,0.10);
     }
 
     .modal-h h3{
       margin:0;
-      font-size: 14px;
+      font-size: 16px;
       letter-spacing: 0.4px;
     }
 
@@ -642,18 +729,15 @@
       padding: 14px 16px 18px;
       display:grid;
       gap: 14px;
-      grid-template-columns: 1fr 1fr;
-    }
-    @media (max-width: 860px){
-      .modal-b{ grid-template-columns: 1fr; }
     }
 
     .modal .box{
-      padding: 12px;
+      padding: 14px;
       border-radius: 18px;
       border: 1px solid rgba(255,255,255,0.12);
       background: rgba(0,0,0,0.18);
     }
+    
     html[data-theme="light"] .modal .box{
       border: 1px solid rgba(10,20,60,0.12);
       background: rgba(255,255,255,0.78);
@@ -665,6 +749,7 @@
       align-items:center;
       flex-wrap:wrap;
     }
+    
     .row > *{ flex: 1 1 auto; }
 
     .hint{
@@ -680,21 +765,130 @@
       justify-content:flex-end;
       padding: 14px 16px;
       border-top: 1px solid rgba(255,255,255,0.08);
+      position: sticky;
+      bottom: 0;
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      backdrop-filter: blur(14px);
     }
+    
     html[data-theme="light"] .modal-actions{
       border-top: 1px solid rgba(10,20,60,0.10);
     }
 
-    /* =========================================================
-       RARITY STYLES 
-       ========================================================= */
+    .progress-bar{
+      width: 100%;
+      height: 10px;
+      background: rgba(0,0,0,0.25);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-fill{
+      height: 100%;
+      background: linear-gradient(90deg, var(--good), var(--info));
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+
+    .achievement-item{
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.10);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .achievement-item:hover{
+      transform: translateX(5px);
+      border-color: rgba(255,255,255,0.18);
+    }
+
+    .achievement-item.unlocked{
+      background: rgba(76,175,80,0.12);
+      border-color: rgba(76,175,80,0.35);
+    }
+
+    .achievement-icon{
+      font-size: 36px;
+      filter: grayscale(1);
+      opacity: 0.4;
+      transition: all 0.3s ease;
+    }
+
+    .achievement-item.unlocked .achievement-icon{
+      filter: grayscale(0);
+      opacity: 1;
+      animation: achievementPop 0.5s ease;
+    }
+
+    @keyframes achievementPop{
+      0%, 100%{ transform: scale(1); }
+      50%{ transform: scale(1.2) rotate(10deg); }
+    }
+
+    .achievement-details{
+      flex: 1;
+    }
+
+    .achievement-title{
+      font-weight: 900;
+      font-size: 14px;
+      margin-bottom: 3px;
+    }
+
+    .achievement-desc{
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .hall-item{
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.12);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .mining-indicator{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 10px;
+      background: rgba(76,175,80,0.15);
+      border: 1px solid rgba(76,175,80,0.35);
+      font-size: 11px;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse{
+      0%, 100%{ opacity: 1; }
+      50%{ opacity: 0.6; }
+    }
+
+    .mining-dot{
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--good);
+      animation: blink 1s infinite;
+    }
+
+    /* RARITY STYLES */
     tr.common td {
       color: #c8c8c8;
       background-color: #8c8c8c;
       font-weight: bold;
       text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
-      border: 2px solid black;
-      border-color: #646464;
+      border: 2px solid #646464;
     }
 
     tr.uncommon td {
@@ -702,8 +896,7 @@
       background-color: #00aa00;
       font-weight: bold;
       text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
-      border: 2px solid black;
-      border-color: #007800;
+      border: 2px solid #007800;
     }
 
     tr.rare td {
@@ -711,8 +904,7 @@
       background-color: #008ec9;
       font-weight: bold;
       text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
-      border: 2px solid black;
-      border-color: #006a96;
+      border: 2px solid #006a96;
     }
 
     tr.epic td {
@@ -720,8 +912,7 @@
       background-color: #9900ad;
       font-weight: bold;
       text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
-      border: 2px solid black;
-      border-color: #630070;
+      border: 2px solid #630070;
     }
 
     tr.mythical td {
@@ -729,8 +920,7 @@
       background-color: #be0000;
       font-weight: bold;
       text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
-      border: 2px solid black;
-      border-color: #ff2828;
+      border: 2px solid #ff2828;
     }
 
     tr.legendary td {
@@ -738,15 +928,14 @@
       background-color: #e69500;
       font-weight: bold;
       text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
-      border: 2px solid black;
-      border-color: #ffb31c;
+      border: 2px solid #ffb31c;
     }
 
     tr.godly td {
       color: #ffffff;
       font-size: 20px;
       font-weight: bold;
-      background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff);
+      background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       border: 2px solid #ff00ff;
@@ -759,7 +948,7 @@
       color: #ffffff;
       font-size: 21px;
       font-weight: bold;
-      background: linear-gradient(to right, #ffffff, #ff4141, #ffffff, #ff4141, #ffffff, #ff4141, #ffffff, #ff4141, #ffffff, #ff4141, #ffffff, #ff4141);
+      background: linear-gradient(to right, #ffffff, #ff4141, #ffffff, #ff4141, #ffffff, #ff4141);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       border: 2px solid #ff4141;
@@ -771,7 +960,7 @@
       color: #ffffff;
       font-size: 22px;
       font-weight: bold;
-      background: linear-gradient(to right, #ffffff, #4141ff, #ffffff, #4141ff, #ffffff, #4141ff, #ffffff, #4141ff, #ffffff, #4141ff, #ffffff, #4141ff);
+      background: linear-gradient(to right, #ffffff, #4141ff, #ffffff, #4141ff, #ffffff, #4141ff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       border: 2px solid #4141ff;
@@ -783,7 +972,7 @@
       color: #ffffff;
       font-size: 24px;
       font-weight: bold;
-      background: linear-gradient(to right, #ffffff, #41ffff, #ffffff, #41ffff, #ffffff, #41ffff, #ffffff, #41ffff, #ffffff, #41ffff, #ffffff, #41ffff);
+      background: linear-gradient(to right, #ffffff, #41ffff, #ffffff, #41ffff, #ffffff, #41ffff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       border: 2px solid #41ffff;
@@ -795,7 +984,7 @@
       color: #ffffff;
       font-size: 25px;
       font-weight: bold;
-      background: linear-gradient(to right, #ffff7d, #5eff89, #ffff7d, #5eff89, #ffff7d, #5eff89, #ffff7d, #5eff89, #ffff7d, #5eff89, #ffff7d, #5eff89);
+      background: linear-gradient(to right, #ffff7d, #5eff89, #ffff7d, #5eff89, #ffff7d, #5eff89);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       border: 2px solid #79ff5e;
@@ -807,7 +996,7 @@
       color: #ffffff;
       font-size: 27px;
       font-weight: bold;
-      background: linear-gradient(to right, #00ff99, #ff00d0, #b7ff00, #356e00, #00ff99, #ff00d0, #b7ff00, #356e00, #00ff99, #ff00d0, #b7ff00, #356e00, #00ff99, #ff00d0, #b7ff00, #356e00, #00ff99, #ff00d0, #b7ff00, #356e00, #00ff99, #ff00d0, #b7ff00, #356e00);
+      background: linear-gradient(to right, #00ff99, #ff00d0, #b7ff00, #356e00, #00ff99, #ff00d0, #b7ff00, #356e00);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       border: 2px solid #b7ff00;
@@ -819,43 +1008,43 @@
       color: #ffffff;
       font-size: 30px;
       font-weight: bold;
-      background: linear-gradient(to right, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64);
+      background: linear-gradient(to right, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       border: 2px solid #ffff64;
       -webkit-text-stroke: 0.75px black;
     }
-    tr.primeval { background: linear-gradient(135deg, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64, #ffffff, #ffff64); }
+    tr.primeval { background: linear-gradient(135deg, #ffffff, #ffff64, #ffffff, #ffff64); }
 
     tr.forsaken td {
       color: #ffffff;
       font-size: 35px;
       font-weight: bold;
-      background: linear-gradient(to right, #ff8000, #ffc17a, #ff4036, #ff8000, #ffc17a, #ff4036, #ff8000, #ffc17a, #ff4036, #ff8000, #ffc17a, #ff4036, #ff8000, #ffc17a, #ff4036, #ff8000, #ffc17a, #ff4036);
+      background: linear-gradient(to right, #ff8000, #ffc17a, #ff4036, #ff8000, #ffc17a, #ff4036);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       border: 2px solid #ff5900;
       -webkit-text-stroke: 0.75px black;
     }
-    tr.forsaken { background: linear-gradient(135deg, #ff804b, #ffc787, #ff5147, #ff804b, #ffc787, #ff5147); }
+    tr.forsaken { background: linear-gradient(135deg, #ff804b, #ffc787, #ff5147); }
 
     tr.infinity td {
       color: #ffffff;
       font-size: 50px;
       font-weight: bold;
-      background: linear-gradient(to right, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff);
+      background: linear-gradient(to right, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       border: 2px solid #00ffc3;
       -webkit-text-stroke: 0.75px black;
     }
-    tr.infinity { background: linear-gradient(135deg, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff, #5cff67, #ffffff, #41ffff); }
+    tr.infinity { background: linear-gradient(135deg, #5cff67, #ffffff, #41ffff); }
 
     tr.cosmic td {
       color: #ffffff;
       font-size: 23px;
       font-weight: bold;
-      background: linear-gradient(to right, #ffffff, #ffff00, #ffffff, #ffff00, #ffffff, #ffff00, #ffffff, #ffff00, #ffffff, #ffff00, #ffffff, #ffff00);
+      background: linear-gradient(to right, #ffffff, #ffff00, #ffffff, #ffff00, #ffffff, #ffff00);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       border: 2px solid #ffff00;
@@ -863,14 +1052,12 @@
     }
     tr.cosmic { background: linear-gradient(45deg, #ffff4b, #ffffff, #ffff4b); }
 
-    /* Reduce “border inside table” chaos: rarity styles already add borders */
     tbody td{ border-left:none; border-right:none; }
   </style>
 </head>
 
 <body>
   <div class="frame">
-    <!-- Decorative stars (kept) -->
     <div class="star" style="top: 50px; left: 20px;"></div>
     <div class="star" style="top: 100px; left: 150px;"></div>
     <div class="star" style="top: 20px; left: 300px;"></div>
@@ -880,139 +1067,155 @@
     <div class="star blue" style="top: 240px; left: 380px;"></div>
 
     <div class="container">
-      <!-- Sticky modern header -->
       <header class="hero">
         <div class="title-wrap">
-          <h1>Mining Game : Mine 1 — Rex</h1>
+          <h1>⛏️ Mining Game : Mine 1 — Rex</h1>
           <div class="subtitle">
-            Click <span class="kbd">Mine</span> to roll a mineral. Inventory saves automatically. 
+            Enhanced Edition • Click <span class="kbd">M</span> pour miner • Auto-save activé
           </div>
         </div>
 
         <div class="btn-row">
-          <!-- Kept IDs for compatibility -->
-          <button id="mineButton" class="btn-primary" title="Mine a random mineral (shortcut: M)">⛏️ Mine</button>
-          <button id="resetButton" class="btn-danger" title="Reset inventory (shortcut: R)">🧹 Reset</button>
-
-          <!-- QoL -->
-          <button id="exportButton" class="btn-info" title="Export save to JSON">⬇️ Export</button>
-          <button id="importButton" class="btn-info" title="Import save from JSON">⬆️ Import</button>
-
-          <button id="themeButton" class="icon-btn" title="Theme: Astro (default)">🌌</button>
-
-          <!-- NEW: Admin Panel -->
-          <button id="adminButton" class="icon-btn" title="Admin Panel (local)">🛠️</button>
+          <button id="mineButton" class="btn-primary">⛏️ Mine</button>
+          <button id="resetButton" class="btn-danger">🧹 Reset</button>
+          <button id="exportButton" class="btn-info">⬇️ Export</button>
+          <button id="importButton" class="btn-info">⬆️ Import</button>
+          <button id="achievementsButton" class="icon-btn btn-warning">🏆</button>
+          <button id="statsButton" class="icon-btn btn-info">📊</button>
+          <button id="themeButton" class="icon-btn">🌌</button>
+          <button id="adminButton" class="icon-btn">🛠️</button>
         </div>
       </header>
 
-      <!-- Left panel: controls + stats -->
       <section class="card">
         <div class="card-h">
-          <h2>Control Center</h2>
-          <span class="chip"><b>Tip</b> <span class="muted">Shortcuts:</span> <span class="kbd">M</span> <span class="kbd">R</span> <span class="kbd">A</span></span>
+          <h2>🎮 Centre de Contrôle</h2>
+          <span class="chip"><span class="muted">Raccourcis:</span> <span class="kbd">M</span> <span class="kbd">R</span> <span class="kbd">A</span></span>
         </div>
         <div class="card-b">
           <div class="controls">
             <div class="field">
-              <label for="searchInput">Search in inventory</label>
-              <input id="searchInput" type="text" placeholder="e.g. diamond, narox, cosmic..." autocomplete="off" />
+              <label for="searchInput">🔍 Rechercher dans l'inventaire</label>
+              <input id="searchInput" type="text" placeholder="diamond, narox, cosmic..." autocomplete="off" />
             </div>
 
             <div class="toggle">
               <div>
-                <div style="font-weight:900;">Sort mode</div>
-                <small>Rarity (default) or Amount</small>
+                <div style="font-weight:900;">📑 Mode de tri</div>
+                <small>Par rareté ou quantité</small>
               </div>
-              <button id="sortToggleButton" type="button">Rarity</button>
+              <button id="sortToggleButton">Rareté</button>
+            </div>
+
+            <div class="toggle">
+              <div>
+                <div style="font-weight:900;">⚡ Auto-Mine</div>
+                <small id="autoMineStatus">Désactivé</small>
+              </div>
+              <button id="autoMineToggle">OFF</button>
+            </div>
+
+            <div class="field" id="autoMineSpeedField" style="display:none;">
+              <label for="autoMineSpeed">⚙️ Vitesse: <span id="autoMineSpeedLabel">1000ms</span></label>
+              <input id="autoMineSpeed" type="range" min="100" max="5000" value="1000" step="100" />
+            </div>
+
+            <div class="toggle">
+              <div>
+                <div style="font-weight:900;">🔊 Effets sonores</div>
+                <small>Notifications audio</small>
+              </div>
+              <button id="soundToggle">ON</button>
             </div>
 
             <div class="stats">
               <div class="stat">
-                <div class="k">TOTAL MINED</div>
+                <div class="k">TOTAL MINÉ</div>
                 <div class="v" id="totalMined">0</div>
-                <div class="sub" id="totalMinedSub">minerals</div>
+                <div class="sub">minéraux</div>
               </div>
 
               <div class="stat">
-                <div class="k">UNIQUE MINERALS</div>
+                <div class="k">UNIQUES</div>
                 <div class="v" id="uniqueMined">0</div>
-                <div class="sub">distinct drops</div>
+                <div class="sub">types différents</div>
               </div>
 
               <div class="stat">
-                <div class="k">LAST DROP</div>
+                <div class="k">DERNIER DROP</div>
                 <div class="v" id="lastDrop">—</div>
-                <div class="sub" id="lastDropRarity">rarity: —</div>
+                <div class="sub" id="lastDropRarity">rareté: —</div>
               </div>
 
               <div class="stat">
                 <div class="k">TOTAL ROLLS</div>
                 <div class="v" id="totalRolls">0</div>
-                <div class="sub">all-time</div>
+                <div class="sub">tout le temps</div>
               </div>
             </div>
 
-            <div id="funnyMessages">Loading funny messages…</div>
+            <div id="funnyMessages">Chargement des messages drôles...</div>
+
+            <div class="box">
+              <div style="font-weight:900; margin-bottom:8px; font-size:13px;">🏆 Progression des Succès</div>
+              <div style="font-size:13px; color:var(--muted); margin-bottom:8px;">
+                <span id="achievementProgress">0/12</span> succès débloqués
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="achievementProgressBar" style="width:0%"></div>
+              </div>
+            </div>
 
             <div class="muted" style="font-size:12px; line-height:1.45;">
-              <b>Welcome to our game!:</b> Vive la France!
-             </div>
+              <b>Bienvenue mineur !</b> Vive la France! 🇫🇷 Ce jeu a été amélioré avec des succès, auto-mine, statistiques avancées et bien plus !
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- Right panel: Inventory -->
       <section class="card">
         <div class="card-h">
-          <h2>Inventory</h2>
-          <span class="chip"><b id="inventoryCount">0</b> <span class="muted">rows shown</span></span>
+          <h2>📦 Inventaire</h2>
+          <span class="chip"><b id="inventoryCount">0</b> <span class="muted">lignes affichées</span></span>
         </div>
 
-        <div class="table-wrap" id="inventory">
-          <table aria-label="Inventory table">
+        <div class="table-wrap">
+          <table>
             <thead>
               <tr>
-                <th style="width:70%;">Mineral</th>
-                <th style="width:30%;">Amount</th>
+                <th style="width:70%;">Minéral</th>
+                <th style="width:30%;">Quantité</th>
               </tr>
             </thead>
             <tbody id="inventoryBody">
-              <!-- Rows inserted by JS -->
             </tbody>
           </table>
         </div>
       </section>
 
       <div id="credits">
-        <p>Made by Nollan and Melan ✨</p>
+        <p>Made by Nollan and Melan ✨ • Enhanced Edition v2.0 avec succès, auto-mine & statistiques !</p>
       </div>
     </div>
 
-    <!-- Toast -->
     <div id="announcement" role="status" aria-live="polite"></div>
 
-    <!-- =========================================================
-         ADMIN PANEL MODAL (new)
-         - Pure client-side (local)
-         - Optional PIN lock to avoid accidental use
-         - Shortcut: Press "A" to open
-         ========================================================= -->
-    <div id="adminBackdrop" class="modal-backdrop" aria-hidden="true">
-      <div class="modal" role="dialog" aria-modal="true" aria-label="Admin panel">
+    <!-- ADMIN MODAL -->
+    <div id="adminBackdrop" class="modal-backdrop">
+      <div class="modal">
         <div class="modal-h">
-          <h3>🛠️ Admin Panel <span class="muted" style="font-weight:600;">(local only)</span></h3>
-          <div class="row" style="flex:0 0 auto; gap:8px;">
-            <span class="chip"><b>PIN</b> <span class="muted">default:</span> <span class="kbd">1337</span></span>
-            <button id="adminCloseButton" class="icon-btn" title="Close">✖️</button>
+          <h3>🛠️ Panneau Admin</h3>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span class="chip"><span class="muted">PIN par défaut:</span> <span class="kbd">1337</span></span>
+            <button id="adminCloseButton" class="icon-btn">✖️</button>
           </div>
         </div>
 
-        <div class="modal-b">
-          <!-- Unlock box -->
+        <div class="modal-b" style="grid-template-columns: 1fr 1fr;">
           <div class="box">
-            <div style="font-weight:900; margin-bottom:10px;">🔐 Unlock</div>
+            <div style="font-weight:900; margin-bottom:10px;">🔐 Déverrouiller</div>
             <div class="field">
-              <label for="adminPinInput">Enter PIN</label>
+              <label for="adminPinInput">Code PIN</label>
               <input id="adminPinInput" type="number" placeholder="1337" />
             </div>
             <div class="row" style="margin-top:10px;">
@@ -1020,35 +1223,29 @@
               <button id="adminLockButton">Lock</button>
             </div>
             <div class="hint" style="margin-top:10px;">
-              The admin panel is just for testing/fun. It modifies your local save only.
+              Le panneau admin est pour les tests. Modifications locales uniquement.
             </div>
           </div>
 
-          <!-- Give minerals -->
           <div class="box">
-            <div style="font-weight:900; margin-bottom:10px;">🎁 Give Minerals</div>
-
+            <div style="font-weight:900; margin-bottom:10px;">🎁 Donner des Minéraux</div>
             <div class="field">
-              <label for="adminMineralSelect">Mineral</label>
+              <label for="adminMineralSelect">Minéral</label>
               <select id="adminMineralSelect"></select>
             </div>
-
             <div class="field" style="margin-top:10px;">
-              <label for="adminAmountInput">Amount</label>
+              <label for="adminAmountInput">Quantité</label>
               <input id="adminAmountInput" type="number" min="1" value="1" />
             </div>
-
             <div class="row" style="margin-top:10px;">
-              <button id="adminGiveButton" class="btn-primary">Give</button>
-              <button id="adminSetButton" class="btn-info">Set Amount</button>
+              <button id="adminGiveButton" class="btn-primary">Donner</button>
+              <button id="adminSetButton" class="btn-info">Définir</button>
             </div>
-
             <div class="hint" style="margin-top:10px;">
-              Give = adds amount. Set Amount = overwrites amount for that mineral.
+              Donner = ajoute la quantité. Définir = remplace la quantité.
             </div>
           </div>
 
-          <!-- Simulation / Quick tools -->
           <div class="box">
             <div style="font-weight:900; margin-bottom:10px;">🎲 Simulation</div>
             <div class="row">
@@ -1057,64 +1254,90 @@
               <button id="adminRoll1000Button" class="btn-primary">Mine x1000</button>
             </div>
             <div class="hint" style="margin-top:10px;">
-              Useful to test rarity distribution fast. (Careful: x1000 adds a lot to inventory.)
+              Utile pour tester la distribution des raretés rapidement.
             </div>
           </div>
 
-          <!-- Dangerous tools -->
           <div class="box">
-            <div style="font-weight:900; margin-bottom:10px;">⚠️ Dangerous</div>
+            <div style="font-weight:900; margin-bottom:10px;">⚠️ Zone Dangereuse</div>
             <div class="row">
-              <button id="adminClearButton" class="btn-danger">Clear Inventory</button>
-              <button id="adminWipeAllButton" class="btn-danger">Wipe ALL Storage</button>
+              <button id="adminClearButton" class="btn-danger">Vider Inventaire</button>
+              <button id="adminWipeAllButton" class="btn-danger">TOUT Effacer</button>
             </div>
             <div class="hint" style="margin-top:10px;">
-              Wipe ALL clears inventory, rolls counter, theme, and admin lock state.
-            </div>
-          </div>
-
-          <!-- Quick export/import -->
-          <div class="box" style="grid-column: 1 / -1;">
-            <div style="font-weight:900; margin-bottom:10px;">💾 Save Tools</div>
-            <div class="row">
-              <button id="adminExportButton" class="btn-info">Export Save</button>
-              <button id="adminImportButton" class="btn-info">Import Save</button>
-              <button id="adminCopyStatsButton">Copy Stats</button>
-            </div>
-            <div class="hint" style="margin-top:10px;">
-              Export/Import is the same as the main buttons, just accessible here.
-              Copy Stats copies a small text summary (total mined, rolls, top minerals).
+              TOUT Effacer supprime inventaire, succès, rolls, thème et paramètres.
             </div>
           </div>
         </div>
 
         <div class="modal-actions">
-          <span class="muted" style="margin-right:auto; font-size:12px;">
-            Shortcut: <span class="kbd">A</span> opens Admin • <span class="kbd">Esc</span> closes
-          </span>
-          <button id="adminDoneButton" class="btn-info">Done</button>
+          <button id="adminDoneButton" class="btn-info">Terminé</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACHIEVEMENTS MODAL -->
+    <div id="achievementsBackdrop" class="modal-backdrop">
+      <div class="modal">
+        <div class="modal-h">
+          <h3>🏆 Succès & Achievements</h3>
+          <button id="achievementsCloseButton" class="icon-btn">✖️</button>
+        </div>
+
+        <div class="modal-b" style="grid-template-columns: 1fr;">
+          <div id="achievementsList"></div>
+        </div>
+
+        <div class="modal-actions">
+          <button id="achievementsDoneButton" class="btn-info">Fermer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS MODAL -->
+    <div id="statsBackdrop" class="modal-backdrop">
+      <div class="modal">
+        <div class="modal-h">
+          <h3>📊 Statistiques Avancées</h3>
+          <button id="statsCloseButton" class="icon-btn">✖️</button>
+        </div>
+
+        <div class="modal-b" style="grid-template-columns: 1fr;">
+          <div class="box">
+            <div style="font-weight:900; margin-bottom:10px;">🏅 Hall of Fame - Top 10</div>
+            <div id="hallOfFameList"></div>
+          </div>
+
+          <div class="box">
+            <div style="font-weight:900; margin-bottom:10px;">📈 Distribution des Raretés</div>
+            <div id="rarityDistribution"></div>
+          </div>
+
+          <div class="box">
+            <div style="font-weight:900; margin-bottom:10px;">🔢 Statistiques Détaillées</div>
+            <div id="advancedStats"></div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button id="statsDoneButton" class="btn-info">Fermer</button>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    /* =========================================================
-       Mining Game — Modernized JS (single file)
-       + Theme switcher + Admin panel
-       ========================================================= */
-
-    // -----------------------------
-    // 0) Storage keys
-    // -----------------------------
+    // STORAGE KEYS
     const STORAGE_KEY = "inventory";
-    const STORAGE_THEME_KEY = "ui_theme";          // "astro" | "dark" | "light"
-    const STORAGE_ROLLS_KEY = "total_rolls";       // number
-    const STORAGE_ADMIN_LOCK_KEY = "admin_locked"; // "1" or "0"
+    const STORAGE_THEME_KEY = "ui_theme";
+    const STORAGE_ROLLS_KEY = "total_rolls";
+    const STORAGE_ADMIN_LOCK_KEY = "admin_locked";
+    const STORAGE_ACHIEVEMENTS_KEY = "achievements";
+    const STORAGE_AUTO_MINE_KEY = "auto_mine";
+    const STORAGE_AUTO_SPEED_KEY = "auto_mine_speed";
+    const STORAGE_SOUND_KEY = "sound_enabled";
 
-    // -----------------------------
-    // 1) Data: your minerals list (kept as-is)
-    // -----------------------------
+    // MINERALS DATA
     const minerals = [
       { name: "Narox | 1/20K", chance: 1 / 20000, rarity: "Epic" },
       { name: "Stone | 1/6", chance: 1 / 6, rarity: "Common" },
@@ -1260,55 +1483,60 @@
       { name: "Dynamo of Fate | 1/750M", chance: 1 / 750000000, rarity: "Forsaken" }
     ];
 
-    // -----------------------------
-    // 2) Funny messages 
-    // -----------------------------
+    // FUNNY MESSAGES
     const funnyMessages = [
-      "You hit a rock... and the rock said 'Ouch!'",
-      "Mining minerals... like a miner lmao (its funny ok)!",
-      "You found a unicorn-shaped diamond! Just kidding, it's regular diamond.",
-      "Is it getting hot in here, or is it just your mining skills?",
-      "Mining minerals faster than a caffeinated squirrel!",
-      "Breaking rocks and taking names!",
-      "You uncovered the fabled 'Invisible Coal'. Congratulations!",
-      "Mining simulator 2023: The Reckoning!",
-      "A shiver runs down your spine...",
-      "A door creaks open on its own, making your heart skip a beat...",
-      "Bro, take a shower...",
-      "Jerome supporta la Roma",
-      "You struck gold! And by gold, I mean a gold-colored mineral."
+      "Tu as frappé un rocher... et il a dit 'Aïe!' 😂",
+      "Mining simulator 2025: The Reckoning! ⛏️",
+      "Un frisson parcourt ton échine... 😨",
+      "Jerome supporta la Roma ⚽",
+      "Tu as trouvé un diamant en forme de licorne! Blague, c'est juste un diamant. 🦄",
+      "Il fait chaud ici ou c'est tes skills? 🔥",
+      "Tu mines plus vite qu'un écureuil sous caféine! 🐿️☕",
+      "Cassage de cailloux et prise de noms! 💪",
+      "Tu as découvert le 'Charbon Invisible'. Félicitations! 👻",
+      "Une porte grince toute seule... 🚪",
+      "Bro, va prendre une douche... 🚿",
+      "Vive la France! 🇫🇷",
+      "C'est l'heure du casse-croûte! 🥖",
+      "Les minéraux te supplient d'arrêter... 😰",
+      "Tu es devenu le maître des rochers! 🗿"
     ];
 
-    function showRandomFunnyMessage() {
-      const randomIndex = Math.floor(Math.random() * funnyMessages.length);
-      const message = funnyMessages[randomIndex];
-      document.getElementById("funnyMessages").textContent = message;
-    }
+    // ACHIEVEMENTS
+    const achievementsList = [
+      { id: "first_mine", name: "Premier Minage", desc: "Miner ton premier minéral", icon: "⛏️", check: () => totalRolls >= 1 },
+      { id: "collector_10", name: "Petit Collectionneur", desc: "Avoir 10 types de minéraux", icon: "📦", check: () => inventory.length >= 10 },
+      { id: "collector_50", name: "Grand Collectionneur", desc: "Avoir 50 types de minéraux", icon: "🏆", check: () => inventory.length >= 50 },
+      { id: "miner_100", name: "Mineur Débutant", desc: "Faire 100 rolls", icon: "⛏️", check: () => totalRolls >= 100 },
+      { id: "miner_1000", name: "Mineur Expert", desc: "Faire 1000 rolls", icon: "💎", check: () => totalRolls >= 1000 },
+      { id: "rare_find", name: "Trouvaille Rare", desc: "Trouver un minéral Epic ou plus", icon: "✨", check: () => hasRarity(['Epic', 'Mythical', 'Legendary', 'Godly', 'Exotic', 'Celestial', 'Heavenly', 'Empyrean', 'Paradoxal', 'Primeval', 'Forsaken', 'Infinity', 'Cosmic']) },
+      { id: "legendary_find", name: "Trouvaille Légendaire", desc: "Trouver un minéral Legendary+", icon: "🌟", check: () => hasRarity(['Legendary', 'Godly', 'Exotic', 'Celestial', 'Heavenly', 'Empyrean', 'Paradoxal', 'Primeval', 'Forsaken', 'Infinity']) },
+      { id: "godly_find", name: "Trouvaille Divine", desc: "Trouver un minéral Godly+", icon: "👑", check: () => hasRarity(['Godly', 'Exotic', 'Celestial', 'Heavenly', 'Empyrean', 'Paradoxal', 'Primeval', 'Forsaken', 'Infinity']) },
+      { id: "hoarder", name: "Accumulateur", desc: "Avoir 1000 minéraux au total", icon: "💰", check: () => getTotalMined() >= 1000 },
+      { id: "speed_demon", name: "Démon de Vitesse", desc: "Activer l'auto-mine", icon: "⚡", check: () => autoMineEnabled },
+      { id: "explorer", name: "Explorateur", desc: "Ouvrir le panneau admin", icon: "🛠️", check: () => localStorage.getItem('admin_opened') === '1' },
+      { id: "completionist", name: "Complétionniste", desc: "Avoir TOUS les types", icon: "🎯", check: () => inventory.length >= minerals.length }
+    ];
 
-    function startFunnyMessagesInterval() {
-      showRandomFunnyMessage();
-      setInterval(showRandomFunnyMessage, 15000); // 15s
-    }
+    // STATE
+    let inventory = [];
+    let sortMode = "rarity";
+    let totalRolls = 0;
+    let adminUnlocked = false;
+    let achievements = {};
+    let autoMineEnabled = false;
+    let autoMineInterval = null;
+    let autoMineSpeed = 1000;
+    let soundEnabled = true;
+    const ADMIN_PIN = "1337";
 
-    startFunnyMessagesInterval();
-
-    // -----------------------------
-    // 3) State
-    // -----------------------------
-    let inventory = [];                 // [{name, amount}]
-    let sortMode = "rarity";            // "rarity" | "amount"
-    let totalRolls = 0;                 // counts every Mine click
-    let adminUnlocked = false;          // admin lock state (local-only)
-    const ADMIN_PIN = "1337";           // change this if you want (set "" to disable PIN)
-
-    // -----------------------------
-    // 4) DOM
-    // -----------------------------
+    // DOM
     const mineButton = document.getElementById("mineButton");
     const resetButton = document.getElementById("resetButton");
     const exportButton = document.getElementById("exportButton");
     const importButton = document.getElementById("importButton");
-
+    const achievementsButton = document.getElementById("achievementsButton");
+    const statsButton = document.getElementById("statsButton");
     const themeButton = document.getElementById("themeButton");
     const adminButton = document.getElementById("adminButton");
 
@@ -1316,7 +1544,6 @@
     const inventoryCount = document.getElementById("inventoryCount");
 
     const totalMinedEl = document.getElementById("totalMined");
-    const totalMinedSubEl = document.getElementById("totalMinedSub");
     const uniqueMinedEl = document.getElementById("uniqueMined");
     const lastDropEl = document.getElementById("lastDrop");
     const lastDropRarityEl = document.getElementById("lastDropRarity");
@@ -1325,63 +1552,84 @@
     const announcementDiv = document.getElementById("announcement");
     const searchInput = document.getElementById("searchInput");
     const sortToggleButton = document.getElementById("sortToggleButton");
+    const autoMineToggle = document.getElementById("autoMineToggle");
+    const autoMineStatus = document.getElementById("autoMineStatus");
+    const autoMineSpeedField = document.getElementById("autoMineSpeedField");
+    const autoMineSpeedInput = document.getElementById("autoMineSpeed");
+    const autoMineSpeedLabel = document.getElementById("autoMineSpeedLabel");
+    const soundToggle = document.getElementById("soundToggle");
 
-    // Admin modal DOM
+    const achievementProgress = document.getElementById("achievementProgress");
+    const achievementProgressBar = document.getElementById("achievementProgressBar");
+
+    // Admin modal
     const adminBackdrop = document.getElementById("adminBackdrop");
     const adminCloseButton = document.getElementById("adminCloseButton");
     const adminDoneButton = document.getElementById("adminDoneButton");
-
     const adminPinInput = document.getElementById("adminPinInput");
     const adminUnlockButton = document.getElementById("adminUnlockButton");
     const adminLockButton = document.getElementById("adminLockButton");
-
     const adminMineralSelect = document.getElementById("adminMineralSelect");
     const adminAmountInput = document.getElementById("adminAmountInput");
     const adminGiveButton = document.getElementById("adminGiveButton");
     const adminSetButton = document.getElementById("adminSetButton");
-
     const adminRoll10Button = document.getElementById("adminRoll10Button");
     const adminRoll100Button = document.getElementById("adminRoll100Button");
     const adminRoll1000Button = document.getElementById("adminRoll1000Button");
-
     const adminClearButton = document.getElementById("adminClearButton");
     const adminWipeAllButton = document.getElementById("adminWipeAllButton");
 
-    const adminExportButton = document.getElementById("adminExportButton");
-    const adminImportButton = document.getElementById("adminImportButton");
-    const adminCopyStatsButton = document.getElementById("adminCopyStatsButton");
+    // Achievements modal
+    const achievementsBackdrop = document.getElementById("achievementsBackdrop");
+    const achievementsCloseButton = document.getElementById("achievementsCloseButton");
+    const achievementsDoneButton = document.getElementById("achievementsDoneButton");
+    const achievementsList_div = document.getElementById("achievementsList");
 
-    // -----------------------------
-    // 5) Events
-    // -----------------------------
+    // Stats modal
+    const statsBackdrop = document.getElementById("statsBackdrop");
+    const statsCloseButton = document.getElementById("statsCloseButton");
+    const statsDoneButton = document.getElementById("statsDoneButton");
+
+    // ==== EVENTS ====
+
     mineButton.addEventListener("click", mine);
     resetButton.addEventListener("click", reset);
-
     exportButton.addEventListener("click", exportSave);
     importButton.addEventListener("click", importSave);
-
+    achievementsButton.addEventListener("click", openAchievements);
+    statsButton.addEventListener("click", openStats);
     themeButton.addEventListener("click", cycleTheme);
     adminButton.addEventListener("click", openAdmin);
 
     searchInput.addEventListener("input", () => updateInventory());
-    sortToggleButton.addEventListener("click", () => {
-      sortMode = (sortMode === "rarity") ? "amount" : "rarity";
-      sortToggleButton.textContent = (sortMode === "rarity") ? "Rarity" : "Amount";
-      showAnnouncement(`Sort mode: ${sortToggleButton.textContent}`);
-      updateInventory();
+    sortToggleButton.addEventListener("click", toggleSort);
+
+    autoMineToggle.addEventListener("click", toggleAutoMine);
+    autoMineSpeedInput.addEventListener("input", (e) => {
+      autoMineSpeed = parseInt(e.target.value);
+      autoMineSpeedLabel.textContent = autoMineSpeed + "ms";
+      if (autoMineEnabled) {
+        stopAutoMine();
+        startAutoMine();
+      }
+      localStorage.setItem(STORAGE_AUTO_SPEED_KEY, autoMineSpeed);
     });
 
-    // Keyboard shortcuts:
-    // - M = mine
-    // - R = reset
-    // - A = admin
-    // - Esc = close admin
+    soundToggle.addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+      soundToggle.textContent = soundEnabled ? "ON" : "OFF";
+      localStorage.setItem(STORAGE_SOUND_KEY, soundEnabled ? "1" : "0");
+      showAnnouncement(soundEnabled ? "Sons activés 🔊" : "Sons désactivés 🔇");
+    });
+
     document.addEventListener("keydown", (e) => {
-      const tag = (document.activeElement && document.activeElement.tagName) ? document.activeElement.tagName.toLowerCase() : "";
-      const typing = (tag === "input" || tag === "textarea" || tag === "select");
+      const tag = (document.activeElement?.tagName || "").toLowerCase();
+      const typing = tag === "input" || tag === "textarea" || tag === "select";
 
       if (e.key === "Escape") {
         closeAdmin();
+        closeAchievements();
+        closeStats();
         return;
       }
 
@@ -1392,32 +1640,22 @@
       if (e.key.toLowerCase() === "a") openAdmin();
     });
 
-    // Admin modal interactions
+    // Admin events
     adminCloseButton.addEventListener("click", closeAdmin);
     adminDoneButton.addEventListener("click", closeAdmin);
-
-    // Clicking the backdrop closes (but not clicking inside modal)
-    adminBackdrop.addEventListener("click", (e) => {
-      if (e.target === adminBackdrop) closeAdmin();
-    });
+    adminBackdrop.addEventListener("click", (e) => { if (e.target === adminBackdrop) closeAdmin(); });
 
     adminUnlockButton.addEventListener("click", () => {
-      if (ADMIN_PIN === "") {
-        adminUnlocked = true;
-        persistAdminLock(false);
-        updateAdminUI();
-        showAnnouncement("Admin unlocked ✅");
-        return;
-      }
-
       const pin = String(adminPinInput.value || "");
-      if (pin === ADMIN_PIN) {
+      if (pin === ADMIN_PIN || ADMIN_PIN === "") {
         adminUnlocked = true;
         persistAdminLock(false);
         updateAdminUI();
-        showAnnouncement("Admin unlocked ✅");
+        showAnnouncement("Admin déverrouillé ✅");
+        localStorage.setItem('admin_opened', '1');
+        checkAchievements();
       } else {
-        showAnnouncement("Wrong PIN ❌");
+        showAnnouncement("PIN incorrect ❌");
       }
     });
 
@@ -1425,7 +1663,7 @@
       adminUnlocked = false;
       persistAdminLock(true);
       updateAdminUI();
-      showAnnouncement("Admin locked 🔒");
+      showAnnouncement("Admin verrouillé 🔒");
     });
 
     adminGiveButton.addEventListener("click", () => {
@@ -1433,7 +1671,7 @@
       const mineralName = adminMineralSelect.value;
       const amount = clampInt(adminAmountInput.value, 1, 999999999);
       addMineral(mineralName, amount);
-      showAnnouncement(`Admin: gave ${amount}x ${mineralName}`);
+      showAnnouncement(`Admin: donné ${amount}x ${mineralName}`);
     });
 
     adminSetButton.addEventListener("click", () => {
@@ -1441,7 +1679,7 @@
       const mineralName = adminMineralSelect.value;
       const amount = clampInt(adminAmountInput.value, 0, 999999999);
       setMineralAmount(mineralName, amount);
-      showAnnouncement(`Admin: set ${mineralName} = ${amount}`);
+      showAnnouncement(`Admin: défini ${mineralName} = ${amount}`);
     });
 
     adminRoll10Button.addEventListener("click", () => { if (requireAdmin()) mineMany(10); });
@@ -1450,73 +1688,84 @@
 
     adminClearButton.addEventListener("click", () => {
       if (!requireAdmin()) return;
-      if (!confirm("Clear inventory?")) return;
+      if (!confirm("Vider l'inventaire?")) return;
       inventory = [];
       saveInventory();
-      updateInventory();
-      updateTotalMined();
-      updateUniqueMined();
-      showAnnouncement("Admin: inventory cleared 🧹");
+      updateAllUI();
+      showAnnouncement("Admin: inventaire vidé 🧹");
     });
 
     adminWipeAllButton.addEventListener("click", () => {
       if (!requireAdmin()) return;
-      if (!confirm("Wipe ALL storage (inventory, rolls, theme, admin lock)?")) return;
+      if (!confirm("TOUT effacer (inventaire, rolls, thème, succès)?")) return;
       localStorage.clear();
       inventory = [];
       totalRolls = 0;
       adminUnlocked = false;
-      applyTheme("astro"); // restore default
+      achievements = {};
+      applyTheme("astro");
       persistTheme("astro");
       persistRolls(0);
       persistAdminLock(true);
       updateAllUI();
-      showAnnouncement("Wiped all local storage ✅");
+      showAnnouncement("Tout effacé ✅");
       closeAdmin();
     });
 
-    adminExportButton.addEventListener("click", exportSave);
-    adminImportButton.addEventListener("click", importSave);
+    // Achievements events
+    achievementsCloseButton.addEventListener("click", closeAchievements);
+    achievementsDoneButton.addEventListener("click", closeAchievements);
+    achievementsBackdrop.addEventListener("click", (e) => { if (e.target === achievementsBackdrop) closeAchievements(); });
 
-    adminCopyStatsButton.addEventListener("click", () => {
-      if (!requireAdmin()) return;
-      const txt = buildStatsText();
-      copyToClipboard(txt)
-        .then(() => showAnnouncement("Stats copied ✅"))
-        .catch(() => showAnnouncement("Clipboard blocked ❌"));
-    });
+    // Stats events
+    statsCloseButton.addEventListener("click", closeStats);
+    statsDoneButton.addEventListener("click", closeStats);
+    statsBackdrop.addEventListener("click", (e) => { if (e.target === statsBackdrop) closeStats(); });
 
-    // -----------------------------
-    // 6) Load saved state
-    // -----------------------------
-    // Inventory
+    // ==== LOAD STATE ====
+
     if (localStorage.getItem(STORAGE_KEY)) {
       try { inventory = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
       catch { inventory = []; }
     }
 
-    // Rolls
     totalRolls = clampInt(localStorage.getItem(STORAGE_ROLLS_KEY), 0, 999999999);
 
-    // Theme (DEFAULT MUST BE ASTRO)
     const savedTheme = (localStorage.getItem(STORAGE_THEME_KEY) || "astro").toLowerCase();
-    applyTheme(savedTheme);          // sets html[data-theme]
-    updateThemeButtonUI(savedTheme); // sets emoji + title
+    applyTheme(savedTheme);
+    updateThemeButtonUI(savedTheme);
 
-    // Admin lock state (default locked)
     const locked = (localStorage.getItem(STORAGE_ADMIN_LOCK_KEY) ?? "1") === "1";
     adminUnlocked = !locked;
 
-    // Populate admin mineral select
-    populateAdminMineralSelect();
+    if (localStorage.getItem(STORAGE_ACHIEVEMENTS_KEY)) {
+      try { achievements = JSON.parse(localStorage.getItem(STORAGE_ACHIEVEMENTS_KEY)) || {}; }
+      catch { achievements = {}; }
+    }
 
-    // Initial UI render
+    autoMineSpeed = clampInt(localStorage.getItem(STORAGE_AUTO_SPEED_KEY), 100, 5000) || 1000;
+    autoMineSpeedInput.value = autoMineSpeed;
+    autoMineSpeedLabel.textContent = autoMineSpeed + "ms";
+
+    soundEnabled = (localStorage.getItem(STORAGE_SOUND_KEY) ?? "1") === "1";
+    soundToggle.textContent = soundEnabled ? "ON" : "OFF";
+
+    populateAdminMineralSelect();
     updateAllUI();
     updateAdminUI();
+    updateAchievementUI();
 
-    // -----------------------------
-    // 7) Core gameplay
-    // -----------------------------
+    // Funny messages
+    function showRandomFunnyMessage() {
+      const randomIndex = Math.floor(Math.random() * funnyMessages.length);
+      document.getElementById("funnyMessages").textContent = funnyMessages[randomIndex];
+    }
+
+    showRandomFunnyMessage();
+    setInterval(showRandomFunnyMessage, 15000);
+
+    // ==== CORE FUNCTIONS ====
+
     function mine() {
       const minedMineral = getRandomMineral();
       if (!minedMineral) return;
@@ -1524,35 +1773,46 @@
       totalRolls++;
       persistRolls(totalRolls);
 
-      const existingMineral = inventory.find(item => item.name === minedMineral.name);
-      if (existingMineral) existingMineral.amount++;
+      const existing = inventory.find(item => item.name === minedMineral.name);
+      if (existing) existing.amount++;
       else inventory.push({ name: minedMineral.name, amount: 1 });
 
-      // UI
-      updateInventory();
       saveInventory();
+      updateInventory();
 
       lastDropEl.textContent = minedMineral.name;
-      lastDropRarityEl.textContent = `rarity: ${minedMineral.rarity}`;
+      lastDropRarityEl.textContent = `rareté: ${minedMineral.rarity}`;
 
-      showAnnouncement(`You got ${minedMineral.rarity} — ${minedMineral.name}`);
+      showAnnouncement(`✨ ${minedMineral.rarity} — ${minedMineral.name}`);
       updateTotalMined();
       updateUniqueMined();
       updateRollsUI();
+      checkAchievements();
+
+      // Particles effect
+      if (['Epic', 'Mythical', 'Legendary', 'Godly', 'Exotic', 'Celestial', 'Heavenly', 'Empyrean', 'Paradoxal', 'Primeval', 'Forsaken', 'Infinity', 'Cosmic'].includes(minedMineral.rarity)) {
+        createParticles();
+      }
+
+      // Sound effect
+      if (soundEnabled) {
+        playMineSound();
+      }
     }
 
     function reset() {
+      if (!confirm("Vider l'inventaire?")) return;
       inventory = [];
-      updateInventory();
       saveInventory();
-      showAnnouncement("Inventory reset.");
+      updateInventory();
+      showAnnouncement("Inventaire vidé 🧹");
       lastDropEl.textContent = "—";
-      lastDropRarityEl.textContent = "rarity: —";
+      lastDropRarityEl.textContent = "rareté: —";
       updateTotalMined();
       updateUniqueMined();
+      checkAchievements();
     }
 
-    // Weighted random
     function getRandomMineral() {
       const totalChances = minerals.reduce((total, mineral) => total + mineral.chance, 0);
       const randomValue = Math.random() * totalChances;
@@ -1565,7 +1825,6 @@
       return minerals[minerals.length - 1];
     }
 
-    // Mine N times (admin helper)
     function mineMany(n) {
       const loops = clampInt(n, 1, 100000);
       for (let i = 0; i < loops; i++) {
@@ -1579,12 +1838,10 @@
       persistRolls(totalRolls);
       saveInventory();
       updateAllUI();
-      showAnnouncement(`Admin: mined x${loops} ✅`);
+      checkAchievements();
+      showAnnouncement(`Admin: miné x${loops} ✅`);
     }
 
-    // -----------------------------
-    // 8) Inventory sorting + rendering
-    // -----------------------------
     function sortInventory() {
       const query = (searchInput.value || "").trim().toLowerCase();
       const filtered = inventory.filter(item => item.name.toLowerCase().includes(query));
@@ -1637,9 +1894,8 @@
     }
 
     function updateTotalMined() {
-      const totalMined = inventory.reduce((total, item) => total + item.amount, 0);
+      const totalMined = getTotalMined();
       totalMinedEl.textContent = String(totalMined);
-      totalMinedSubEl.textContent = "minerals";
     }
 
     function updateUniqueMined() {
@@ -1655,21 +1911,16 @@
       updateTotalMined();
       updateUniqueMined();
       updateRollsUI();
+      updateAchievementUI();
     }
 
-    // -----------------------------
-    // 9) Save / Autosave
-    // -----------------------------
     function saveInventory() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(inventory));
     }
 
-    const saveInterval = 600000; // 10 minutes
-    setInterval(saveInventory, saveInterval);
+    setInterval(saveInventory, 600000); // 10 min
 
-    // -----------------------------
-    // 10) Toast / Announcement
-    // -----------------------------
+    // Announcements
     let announcementTimeout;
     function showAnnouncement(message) {
       clearTimeout(announcementTimeout);
@@ -1683,23 +1934,21 @@
       }, 2500);
     }
 
-    // -----------------------------
-    // 11) Export / Import save
-    // -----------------------------
+    // Export/Import
     function exportSave() {
       const data = JSON.stringify(inventory, null, 2);
       copyToClipboard(data)
-        .then(() => showAnnouncement("Save copied to clipboard ✅"))
+        .then(() => showAnnouncement("Sauvegarde copiée ✅"))
         .catch(() => downloadText("mining-save.json", data));
     }
 
     function importSave() {
-      const raw = prompt("Paste your save JSON here:");
+      const raw = prompt("Colle ta sauvegarde JSON ici:");
       if (!raw) return;
 
       try {
         const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) throw new Error("Save must be an array");
+        if (!Array.isArray(parsed)) throw new Error("Invalid");
 
         const clean = parsed
           .filter(x => x && typeof x.name === "string" && Number.isFinite(Number(x.amount)))
@@ -1708,9 +1957,9 @@
         inventory = clean;
         saveInventory();
         updateAllUI();
-        showAnnouncement("Save imported ✅");
+        showAnnouncement("Sauvegarde importée ✅");
       } catch {
-        showAnnouncement("Invalid save JSON ❌");
+        showAnnouncement("JSON invalide ❌");
       }
     }
 
@@ -1726,7 +1975,7 @@
       a.remove();
 
       URL.revokeObjectURL(url);
-      showAnnouncement("Save downloaded ✅");
+      showAnnouncement("Téléchargé ✅");
     }
 
     function copyToClipboard(text) {
@@ -1736,14 +1985,9 @@
       return Promise.reject(new Error("clipboard not available"));
     }
 
-    // -----------------------------
-    // 12) Theme switcher 
-    // - Astro must be default
-    // - Button cycles: astro -> dark -> light -> astro ...
-    // -----------------------------
+    // Theme
     function applyTheme(theme) {
       const t = (theme || "astro").toLowerCase();
-      // html dataset: astro maps to no "dark/light" overrides, but we still set a value for consistency
       if (t === "dark") document.documentElement.setAttribute("data-theme", "dark");
       else if (t === "light") document.documentElement.setAttribute("data-theme", "light");
       else document.documentElement.setAttribute("data-theme", "astro");
@@ -1757,13 +2001,13 @@
       const t = (theme || "astro").toLowerCase();
       if (t === "dark") {
         themeButton.textContent = "🌙";
-        themeButton.title = "Theme: Dark";
+        themeButton.title = "Thème: Dark";
       } else if (t === "light") {
         themeButton.textContent = "☀️";
-        themeButton.title = "Theme: Light";
+        themeButton.title = "Thème: Light";
       } else {
         themeButton.textContent = "🌌";
-        themeButton.title = "Theme: Astro (default)";
+        themeButton.title = "Thème: Astro";
       }
     }
 
@@ -1774,21 +2018,62 @@
       applyTheme(next);
       persistTheme(next);
       updateThemeButtonUI(next);
-      showAnnouncement(`Theme: ${capitalize(next)}`);
+      showAnnouncement(`Thème: ${capitalize(next)}`);
     }
 
-    // -----------------------------
-    // 13) Admin Panel (NEW)
-    // -----------------------------
+    function toggleSort() {
+      sortMode = (sortMode === "rarity") ? "amount" : "rarity";
+      sortToggleButton.textContent = (sortMode === "rarity") ? "Rareté" : "Quantité";
+      showAnnouncement(`Tri: ${sortToggleButton.textContent}`);
+      updateInventory();
+    }
+
+    // Auto-mine
+    function toggleAutoMine() {
+      autoMineEnabled = !autoMineEnabled;
+      
+      if (autoMineEnabled) {
+        autoMineToggle.textContent = "ON";
+        autoMineToggle.classList.add("btn-primary");
+        autoMineStatus.innerHTML = '<span class="mining-indicator"><span class="mining-dot"></span> Actif</span>';
+        autoMineSpeedField.style.display = "block";
+        startAutoMine();
+        showAnnouncement("Auto-mine activé ⚡");
+        checkAchievements();
+      } else {
+        autoMineToggle.textContent = "OFF";
+        autoMineToggle.classList.remove("btn-primary");
+        autoMineStatus.textContent = "Désactivé";
+        autoMineSpeedField.style.display = "none";
+        stopAutoMine();
+        showAnnouncement("Auto-mine désactivé");
+      }
+
+      localStorage.setItem(STORAGE_AUTO_MINE_KEY, autoMineEnabled ? "1" : "0");
+    }
+
+    function startAutoMine() {
+      if (autoMineInterval) clearInterval(autoMineInterval);
+      autoMineInterval = setInterval(() => {
+        mine();
+      }, autoMineSpeed);
+    }
+
+    function stopAutoMine() {
+      if (autoMineInterval) {
+        clearInterval(autoMineInterval);
+        autoMineInterval = null;
+      }
+    }
+
+    // Admin
     function openAdmin() {
       adminBackdrop.style.display = "flex";
-      adminBackdrop.setAttribute("aria-hidden", "false");
       updateAdminUI();
     }
 
     function closeAdmin() {
       adminBackdrop.style.display = "none";
-      adminBackdrop.setAttribute("aria-hidden", "true");
     }
 
     function persistAdminLock(locked) {
@@ -1797,29 +2082,21 @@
 
     function requireAdmin() {
       if (adminUnlocked) return true;
-      showAnnouncement("Admin is locked 🔒 (enter PIN)");
+      showAnnouncement("Admin verrouillé 🔒 (entre le PIN)");
       return false;
     }
 
     function updateAdminUI() {
-      // Disable admin actions when locked
       const disabled = !adminUnlocked;
 
-      const actionButtons = [
-        adminGiveButton, adminSetButton,
-        adminRoll10Button, adminRoll100Button, adminRoll1000Button,
-        adminClearButton, adminWipeAllButton,
-        adminExportButton, adminImportButton, adminCopyStatsButton
-      ];
-
-      actionButtons.forEach(btn => btn.disabled = disabled);
+      [adminGiveButton, adminSetButton, adminRoll10Button, adminRoll100Button, adminRoll1000Button,
+       adminClearButton, adminWipeAllButton].forEach(btn => btn.disabled = disabled);
 
       adminPinInput.value = "";
     }
 
     function populateAdminMineralSelect() {
       adminMineralSelect.innerHTML = "";
-      // Sort by chance (rarest first) so admin can pick cool stuff quickly
       const sorted = [...minerals].sort((a, b) => a.chance - b.chance);
 
       for (const m of sorted) {
@@ -1846,44 +2123,164 @@
       if (existing) existing.amount = amt;
       else inventory.push({ name: mineralName, amount: amt });
 
-      // Remove 0 amounts to keep inventory clean
       inventory = inventory.filter(i => i.amount > 0);
 
       saveInventory();
       updateAllUI();
     }
 
-    function buildStatsText() {
-      const totalMined = inventory.reduce((t, i) => t + i.amount, 0);
-      const unique = inventory.length;
+    // Achievements
+    function checkAchievements() {
+      let unlocked = 0;
+      
+      achievementsList.forEach(ach => {
+        if (!achievements[ach.id] && ach.check()) {
+          achievements[ach.id] = true;
+          showAnnouncement(`🏆 Succès débloqué: ${ach.name}!`);
+        }
+        if (achievements[ach.id]) unlocked++;
+      });
 
-      // Top 10 by amount
-      const top = [...inventory]
+      localStorage.setItem(STORAGE_ACHIEVEMENTS_KEY, JSON.stringify(achievements));
+      updateAchievementUI();
+    }
+
+    function updateAchievementUI() {
+      const unlocked = Object.keys(achievements).length;
+      const total = achievementsList.length;
+      const percent = total > 0 ? (unlocked / total * 100).toFixed(0) : 0;
+
+      achievementProgress.textContent = `${unlocked}/${total}`;
+      achievementProgressBar.style.width = percent + "%";
+    }
+
+    function openAchievements() {
+      achievementsBackdrop.style.display = "flex";
+      renderAchievements();
+    }
+
+    function closeAchievements() {
+      achievementsBackdrop.style.display = "none";
+    }
+
+    function renderAchievements() {
+      achievementsList_div.innerHTML = "";
+      
+      achievementsList.forEach(ach => {
+        const isUnlocked = achievements[ach.id] || false;
+        
+        const div = document.createElement("div");
+        div.className = `achievement-item ${isUnlocked ? 'unlocked' : ''}`;
+        
+        div.innerHTML = `
+          <div class="achievement-icon">${ach.icon}</div>
+          <div class="achievement-details">
+            <div class="achievement-title">${ach.name}</div>
+            <div class="achievement-desc">${ach.desc}</div>
+          </div>
+        `;
+        
+        achievementsList_div.appendChild(div);
+      });
+    }
+
+    // Stats
+    function openStats() {
+      statsBackdrop.style.display = "flex";
+      renderStats();
+    }
+
+    function closeStats() {
+      statsBackdrop.style.display = "none";
+    }
+
+    function renderStats() {
+      // Hall of Fame
+      const top10 = [...inventory]
         .sort((a, b) => b.amount - a.amount)
         .slice(0, 10);
 
-      const lines = [];
-      lines.push("Mining Game — Stats");
-      lines.push(`Total mined: ${totalMined}`);
-      lines.push(`Unique minerals: ${unique}`);
-      lines.push(`Total rolls: ${totalRolls}`);
-      lines.push("");
-      lines.push("Top minerals (by amount):");
-      top.forEach((x, idx) => lines.push(`${idx + 1}. ${x.name} — ${x.amount}`));
+      const hallDiv = document.getElementById("hallOfFameList");
+      hallDiv.innerHTML = "";
 
-      return lines.join("\n");
+      if (top10.length === 0) {
+        hallDiv.innerHTML = '<div class="hint">Aucun minéral pour l\'instant!</div>';
+      } else {
+        top10.forEach((item, idx) => {
+          const mineral = minerals.find(m => m.name === item.name);
+          const div = document.createElement("div");
+          div.className = "hall-item";
+          div.innerHTML = `
+            <span><b>#${idx + 1}</b> ${item.name}</span>
+            <span style="color:var(--muted);">${item.amount}x</span>
+          `;
+          hallDiv.appendChild(div);
+        });
+      }
+
+      // Rarity distribution
+      const rarityCount = {};
+      inventory.forEach(item => {
+        const mineral = minerals.find(m => m.name === item.name);
+        const rarity = mineral?.rarity || "Unknown";
+        rarityCount[rarity] = (rarityCount[rarity] || 0) + item.amount;
+      });
+
+      const rarityDiv = document.getElementById("rarityDistribution");
+      rarityDiv.innerHTML = "";
+
+      const rarities = Object.keys(rarityCount).sort((a, b) => rarityCount[b] - rarityCount[a]);
+      
+      if (rarities.length === 0) {
+        rarityDiv.innerHTML = '<div class="hint">Pas encore de données!</div>';
+      } else {
+        rarities.forEach(rarity => {
+          const count = rarityCount[rarity];
+          const percent = ((count / getTotalMined()) * 100).toFixed(1);
+          
+          const div = document.createElement("div");
+          div.style.marginBottom = "10px";
+          div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:13px;">
+              <span><b>${rarity}</b></span>
+              <span style="color:var(--muted);">${count} (${percent}%)</span>
+            </div>
+            <div class="progress-bar" style="height:6px; margin:0;">
+              <div class="progress-fill" style="width:${percent}%"></div>
+            </div>
+          `;
+          rarityDiv.appendChild(div);
+        });
+      }
+
+      // Advanced stats
+      const advDiv = document.getElementById("advancedStats");
+      const totalMined = getTotalMined();
+      const avgPerMineral = totalMined > 0 && inventory.length > 0 ? (totalMined / inventory.length).toFixed(2) : 0;
+      
+      advDiv.innerHTML = `
+        <div style="font-size:13px; line-height:1.8;">
+          <div>📊 <b>Total miné:</b> ${totalMined}</div>
+          <div>🎯 <b>Types uniques:</b> ${inventory.length} / ${minerals.length}</div>
+          <div>🎲 <b>Total rolls:</b> ${totalRolls}</div>
+          <div>📈 <b>Moyenne par type:</b> ${avgPerMineral}</div>
+          <div>🏆 <b>Succès:</b> ${Object.keys(achievements).length}/${achievementsList.length}</div>
+        </div>
+      `;
     }
 
-    // -----------------------------
-    // 14) Rolls persistence
-    // -----------------------------
-    function persistRolls(n) {
-      localStorage.setItem(STORAGE_ROLLS_KEY, String(clampInt(n, 0, 999999999)));
+    // Helpers
+    function getTotalMined() {
+      return inventory.reduce((total, item) => total + item.amount, 0);
     }
 
-    // -----------------------------
-    // 15) Helpers
-    // -----------------------------
+    function hasRarity(rarities) {
+      return inventory.some(item => {
+        const mineral = minerals.find(m => m.name === item.name);
+        return mineral && rarities.includes(mineral.rarity);
+      });
+    }
+
     function clampInt(value, min, max) {
       const n = Math.floor(Number(value));
       if (!Number.isFinite(n)) return min;
@@ -1893,6 +2290,50 @@
     function capitalize(s) {
       if (!s) return s;
       return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    function persistRolls(n) {
+      localStorage.setItem(STORAGE_ROLLS_KEY, String(clampInt(n, 0, 999999999)));
+    }
+
+    // Particle effect
+    function createParticles() {
+      const particles = ['✨', '💎', '🌟', '⭐', '💫'];
+      const numParticles = 5;
+
+      for (let i = 0; i < numParticles; i++) {
+        const particle = document.createElement("div");
+        particle.className = "particle";
+        particle.textContent = particles[Math.floor(Math.random() * particles.length)];
+        particle.style.left = (Math.random() * window.innerWidth) + "px";
+        particle.style.top = (Math.random() * window.innerHeight * 0.5) + "px";
+        document.body.appendChild(particle);
+
+        setTimeout(() => particle.remove(), 1500);
+      }
+    }
+
+    // Sound effect (simple beep using Web Audio API)
+    function playMineSound() {
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.1);
+      } catch (e) {
+        // Silent fail if audio not supported
+      }
     }
   </script>
 </body>
