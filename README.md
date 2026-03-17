@@ -118,8 +118,8 @@ Ce jeu est un projet fun et expérimental visant à :
 
 ## 🤝 Crédits
 
-- **Nollan Droguet**
-- **Melan Lecoeuvre**
+- **Nollan D.**
+- **Melan L.**
 
 🇫🇷 Made in Bretagne : Forza Roazhon! 🐏✨
 
