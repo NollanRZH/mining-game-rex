@@ -138,9 +138,5 @@ Toute reproduction, copie, modification, redistribution ou utilisation, partiell
 
 ## 📬 Contact
 
-Si tu veux utiliser une partie du projet (collab, autorisation, partenariat), contacte les auteurs via GitHub ou en copie par mail :
-
-**nollandroguetpro@gmail.com**
-
-**melanlecoeuvre.pro@mail.com**
+Si tu veux utiliser une partie du projet (collab, autorisation, partenariat), contacte les auteurs via GitHub
 
